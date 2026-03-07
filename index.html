@@ -69,22 +69,54 @@ header{
   border-color:var(--border);margin-bottom:-1px;
 }
 
-/* ── 모바일 하단 내비 ──────────────────────────────────── */
-.mobile-nav{
-  display:none;position:fixed;bottom:0;left:0;right:0;
-  background:var(--surface);border-top:1px solid var(--border);
-  z-index:200;box-shadow:0 -2px 12px var(--shadow);
+/* ── 햄버거 버튼 (모바일 전용) ─────────────────────────── */
+.hamburger{
+  display:none;width:36px;height:36px;border-radius:8px;
+  border:1px solid var(--border);background:var(--surface2);
+  cursor:pointer;flex-direction:column;align-items:center;
+  justify-content:center;gap:5px;flex-shrink:0;
+  transition:background .2s;
 }
-.mobile-nav-inner{display:flex;align-items:stretch;}
-.mnav-item{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;padding:8px 4px 10px;cursor:pointer;
-  gap:3px;border:none;background:transparent;color:var(--text2);
-  font-size:10px;font-weight:500;transition:color .2s;min-width:0;
+.hamburger:hover{background:var(--border);}
+.hamburger span{
+  display:block;width:18px;height:2px;background:var(--text);
+  border-radius:2px;transition:transform .3s,opacity .3s,width .3s;
 }
-.mnav-item .icon{font-size:20px;line-height:1;}
-.mnav-item.active{color:var(--accent);}
-.mnav-item.active .icon{transform:scale(1.1);}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.hamburger.open span:nth-child(2){opacity:0;width:0;}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+/* ── 모바일 슬라이드 메뉴 ──────────────────────────────── */
+.mobile-menu{
+  display:none;position:fixed;top:56px;left:0;right:0;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  box-shadow:0 8px 24px var(--shadow);z-index:190;
+  /* 슬라이드 다운 */
+  transform:translateY(-8px);opacity:0;
+  transition:transform .25s cubic-bezier(.4,0,.2,1), opacity .25s;
+  pointer-events:none;
+}
+.mobile-menu.open{
+  transform:translateY(0);opacity:1;pointer-events:auto;
+}
+.mobile-menu-item{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 20px;font-size:15px;font-weight:500;
+  color:var(--text2);cursor:pointer;
+  border-bottom:1px solid var(--border);
+  transition:background .15s,color .15s;
+}
+.mobile-menu-item:last-child{border-bottom:none;}
+.mobile-menu-item:hover{background:var(--surface2);color:var(--text);}
+.mobile-menu-item.active{color:var(--accent);background:var(--surface2);}
+.mobile-menu-item .micon{font-size:18px;width:24px;text-align:center;}
+
+/* 오버레이 (메뉴 외부 클릭 시 닫기) */
+.menu-overlay{
+  display:none;position:fixed;inset:0;z-index:180;
+  background:rgba(0,0,0,.3);
+}
+.menu-overlay.open{display:block;}
 
 /* ── 메인 콘텐츠 ───────────────────────────────────────── */
 main{padding:20px;max-width:1200px;margin:0 auto;}
@@ -191,14 +223,17 @@ select.inp{cursor:pointer;}
   /* 헤더 */
   header{padding:0 14px;height:52px;}
   .logo{font-size:15px;}
-  .update-time span:last-child{display:none;} /* 업데이트 시각 텍스트 숨김 */
+  .update-time span:last-child{display:none;}
 
-  /* 데스크탑 탭 숨기고 하단 네비 표시 */
+  /* 데스크탑 탭 숨기고 햄버거 표시 */
   .tabs{display:none;}
-  .mobile-nav{display:flex;}
+  .hamburger{display:flex;}
 
-  /* 본문 하단 패딩 (하단 네비 높이만큼) */
-  main{padding:14px 12px 80px;}
+  /* 모바일 메뉴 top 위치를 헤더 높이에 맞춤 */
+  .mobile-menu{top:52px;}
+
+  /* 본문 패딩 */
+  main{padding:14px 12px 24px;}
 
   /* 통계 카드 2열 */
   .summary-grid{grid-template-columns:repeat(2,1fr);gap:9px;}
@@ -219,11 +254,11 @@ select.inp{cursor:pointer;}
   .token-input-row .inp{min-width:0;}
 
   /* 저장바 */
-  .save-bar{flex-direction:column;align-items:flex-start;bottom:72px;}
+  .save-bar{flex-direction:column;align-items:flex-start;}
   .save-bar .btn{width:100%;}
 
-  /* 토스트 위치 */
-  .toast{bottom:88px;left:12px;right:12px;max-width:none;}
+  /* 토스트 */
+  .toast{bottom:20px;left:12px;right:12px;max-width:none;}
 
   /* 차트 높이 */
   .chart-wrap{height:180px;}
@@ -241,8 +276,34 @@ select.inp{cursor:pointer;}
       <span id="last-updated">로딩 중...</span>
     </div>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="다크/라이트 모드 전환">🌙</button>
+    <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="메뉴">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<!-- ── 모바일 슬라이드 메뉴 ── -->
+<div class="menu-overlay" id="menu-overlay" onclick="closeMobileMenu()"></div>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mobile-menu-item active" id="mmenu-all" onclick="switchTab('all',null,'mmenu-all')">
+    <span class="micon">🗂️</span> 전체
+  </div>
+  <div class="mobile-menu-item" id="mmenu-tech" onclick="switchTab('tech',null,'mmenu-tech')">
+    <span class="micon">🔬</span> 기술 트렌드
+  </div>
+  <div class="mobile-menu-item" id="mmenu-biz" onclick="switchTab('biz',null,'mmenu-biz')">
+    <span class="micon">💼</span> 비즈니스
+  </div>
+  <div class="mobile-menu-item" id="mmenu-policy" onclick="switchTab('policy',null,'mmenu-policy')">
+    <span class="micon">⚖️</span> 정책·규제
+  </div>
+  <div class="mobile-menu-item" id="mmenu-youtube" onclick="switchTab('youtube',null,'mmenu-youtube')">
+    <span class="micon">📺</span> 유튜브
+  </div>
+  <div class="mobile-menu-item" id="mmenu-sources" onclick="switchTab('sources',null,'mmenu-sources')">
+    <span class="micon">⚙️</span> 소스 관리
+  </div>
+</div>
 
 <!-- ── 데스크탑 탭 ── -->
 <div class="tabs">
@@ -335,29 +396,6 @@ select.inp{cursor:pointer;}
 
 </main>
 
-<!-- ── 모바일 하단 네비 ── -->
-<nav class="mobile-nav">
-  <div class="mobile-nav-inner">
-    <button class="mnav-item active" id="mnav-all" onclick="switchTab('all',null,'mnav-all')">
-      <span class="icon">🗂️</span><span>전체</span>
-    </button>
-    <button class="mnav-item" id="mnav-tech" onclick="switchTab('tech',null,'mnav-tech')">
-      <span class="icon">🔬</span><span>기술</span>
-    </button>
-    <button class="mnav-item" id="mnav-biz" onclick="switchTab('biz',null,'mnav-biz')">
-      <span class="icon">💼</span><span>비즈니스</span>
-    </button>
-    <button class="mnav-item" id="mnav-policy" onclick="switchTab('policy',null,'mnav-policy')">
-      <span class="icon">⚖️</span><span>정책</span>
-    </button>
-    <button class="mnav-item" id="mnav-youtube" onclick="switchTab('youtube',null,'mnav-youtube')">
-      <span class="icon">📺</span><span>유튜브</span>
-    </button>
-    <button class="mnav-item" id="mnav-sources" onclick="switchTab('sources',null,'mnav-sources')">
-      <span class="icon">⚙️</span><span>소스</span>
-    </button>
-  </div>
-</nav>
 
 <div id="toast" class="toast"></div>
 
@@ -410,9 +448,30 @@ function toggleTheme() {
   });
 })();
 
-// ── 탭 전환 ───────────────────────────────────────────────
-// el: 데스크탑 탭 엘리먼트 (모바일일 땐 null), mnavId: 모바일 네비 id
-function switchTab(id, el, mnavId) {
+// ── 햄버거 메뉴 ──────────────────────────────────────────
+function toggleMobileMenu() {
+  const menu    = document.getElementById('mobile-menu');
+  const overlay = document.getElementById('menu-overlay');
+  const burger  = document.getElementById('hamburger');
+  const isOpen  = menu.classList.contains('open');
+  if (isOpen) {
+    menu.classList.remove('open');
+    overlay.classList.remove('open');
+    burger.classList.remove('open');
+  } else {
+    menu.classList.add('open');
+    overlay.classList.add('open');
+    burger.classList.add('open');
+  }
+}
+function closeMobileMenu() {
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('menu-overlay').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
+}
+
+// ── 탭 전환 ──────────────────────────────────────────────
+function switchTab(id, el, mmenuId) {
   // 데스크탑 탭 active
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   if (el) el.classList.add('active');
@@ -420,16 +479,19 @@ function switchTab(id, el, mnavId) {
     const match = document.querySelector(`.tab[onclick*="'${id}'"]`);
     if (match) match.classList.add('active');
   }
-  // 모바일 네비 active
-  document.querySelectorAll('.mnav-item').forEach(b => b.classList.remove('active'));
-  const mnavTarget = mnavId ? document.getElementById(mnavId) : document.getElementById('mnav-' + id);
-  if (mnavTarget) mnavTarget.classList.add('active');
+  // 모바일 메뉴 active
+  document.querySelectorAll('.mobile-menu-item').forEach(b => b.classList.remove('active'));
+  const mmTarget = mmenuId ? document.getElementById(mmenuId) : document.getElementById('mmenu-' + id);
+  if (mmTarget) mmTarget.classList.add('active');
   // 패널 전환
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
   if (id === 'sources') initSourcesTab();
-  // 모바일: 스크롤 상단으로
-  if (window.innerWidth <= 640) window.scrollTo({top:0, behavior:'smooth'});
+  // 모바일: 메뉴 닫고 상단으로 스크롤
+  if (window.innerWidth <= 640) {
+    closeMobileMenu();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
 }
 
 // ── 토큰 관리 ─────────────────────────────────────────────
