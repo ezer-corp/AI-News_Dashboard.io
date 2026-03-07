@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI 뉴스 대시보드 | EZER Corp</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 /* ── 테마 변수 ─────────────────────────────────────────── */
 :root {
@@ -132,10 +131,11 @@ main{padding:20px;max-width:1200px;margin:0 auto;}
 .stat-card .value{font-size:26px;font-weight:700;}
 .stat-card .sub{font-size:11px;color:var(--text2);margin-top:3px;}
 
-/* ── 차트 ──────────────────────────────────────────────── */
+/* ── 워드클라우드 ──────────────────────────────────────── */
 .chart-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:24px;}
 .chart-section h3{font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px;}
-.chart-wrap{height:220px;}
+.chart-wrap{min-height:180px;display:flex;align-items:center;justify-content:center;}
+.wordcloud-wrap{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px;padding:8px;width:100%;}
 
 /* ── 뉴스 그리드 ───────────────────────────────────────── */
 .news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
@@ -237,10 +237,16 @@ select.inp{cursor:pointer;}
   /* 본문 패딩 */
   main{padding:14px 12px 24px;}
 
-  /* 통계 카드 2열 */
-  .summary-grid{grid-template-columns:repeat(2,1fr);gap:9px;}
-  .stat-card{padding:12px;}
-  .stat-card .value{font-size:22px;}
+  /* 통계 카드 — 가로 스크롤 스트립 */
+  .summary-grid{
+    display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;gap:8px;margin-bottom:16px;padding-bottom:2px;
+  }
+  .summary-grid::-webkit-scrollbar{display:none;}
+  .stat-card{flex:0 0 76px;padding:10px 8px;text-align:center;border-radius:10px;}
+  .stat-card .label{font-size:9px;letter-spacing:0;margin-bottom:4px;}
+  .stat-card .value{font-size:20px;}
+  .stat-card .sub{display:none;}
 
   /* 뉴스 1열 */
   .news-grid{grid-template-columns:1fr;gap:10px;}
@@ -262,8 +268,8 @@ select.inp{cursor:pointer;}
   /* 토스트 */
   .toast{bottom:20px;left:12px;right:12px;max-width:none;}
 
-  /* 차트 높이 */
-  .chart-wrap{height:180px;}
+  /* 워드클라우드 최소 높이 */
+  .chart-wrap{min-height:140px;}
 }
 </style>
 </head>
@@ -324,7 +330,7 @@ select.inp{cursor:pointer;}
     <div class="summary-grid" id="stat-cards"></div>
     <div class="chart-section">
       <h3>📊 오늘의 키워드 트렌드 Top 10</h3>
-      <div class="chart-wrap"><canvas id="keyword-chart"></canvas></div>
+      <div class="chart-wrap" id="keyword-chart-wrap"></div>
     </div>
     <div class="news-grid" id="news-all"></div>
   </div>
@@ -418,7 +424,7 @@ const PRESETS = [
 ];
 
 let sources = [], dirty = false, sourcesFileSHA = '';
-let chartInstance = null;
+let lastKeywords = [];
 
 // ── 다크/라이트 모드 ───────────────────────────────────────
 function toggleTheme() {
@@ -428,18 +434,8 @@ function toggleTheme() {
   html.setAttribute('data-theme', next);
   localStorage.setItem('ai_dash_theme', next);
   document.getElementById('theme-btn').textContent = next === 'dark' ? '🌙' : '☀️';
-  // 차트 색상 업데이트
-  if (chartInstance) {
-    const gridColor = next === 'dark' ? '#30363d' : '#d0d7de';
-    const tickColor = next === 'dark' ? '#8b949e' : '#656d76';
-    const barColor = next === 'dark' ? '#58a6ff' : '#0969da';
-    chartInstance.data.datasets[0].backgroundColor = barColor + 'b3';
-    chartInstance.data.datasets[0].borderColor = barColor;
-    chartInstance.options.scales.x.grid.color = gridColor;
-    chartInstance.options.scales.x.ticks.color = tickColor;
-    chartInstance.options.scales.y.ticks.color = next === 'dark' ? '#e6edf3' : '#1f2328';
-    chartInstance.update();
-  }
+  // 워드클라우드 색상 재렌더
+  if (lastKeywords.length) renderChart(lastKeywords);
 }
 (function initTheme() {
   const saved = localStorage.getItem('ai_dash_theme') || 'dark';
@@ -682,28 +678,44 @@ function renderYtCard(item) {
 }
 
 function renderChart(keywords) {
-  if (!keywords||!keywords.length) return;
-  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
-  const gridColor = isDark?'#30363d':'#d0d7de';
-  const tickColor = isDark?'#8b949e':'#656d76';
-  const barColor  = isDark?'#58a6ff':'#0969da';
-  const ctx = document.getElementById('keyword-chart').getContext('2d');
-  if (chartInstance) chartInstance.destroy();
-  chartInstance = new Chart(ctx, {
-    type:'bar',
-    data:{
-      labels:keywords.map(k=>k.word),
-      datasets:[{data:keywords.map(k=>k.count),backgroundColor:barColor+'b3',borderColor:barColor,borderWidth:1,borderRadius:4}]
-    },
-    options:{
-      indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{grid:{color:gridColor},ticks:{color:tickColor}},
-        y:{grid:{display:false},ticks:{color:isDark?'#e6edf3':'#1f2328',font:{size:12}}}
-      }
-    }
-  });
+  if (!keywords || !keywords.length) return;
+  lastKeywords = keywords;
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const wrap = document.getElementById('keyword-chart-wrap');
+
+  const DARK_COLORS  = ['#58a6ff','#3fb950','#bc8cff','#d29922','#f85149','#79c0ff','#56d364','#e3b341','#ff7b72','#a5d6ff'];
+  const LIGHT_COLORS = ['#0969da','#1a7f37','#8250df','#9a6700','#cf222e','#0550ae','#116329','#633c01','#a40e26','#005a9e'];
+  const palette = isDark ? DARK_COLORS : LIGHT_COLORS;
+
+  const maxCount = Math.max(...keywords.map(k => k.count), 1);
+
+  // 빈도 순 정렬 후 섞어서 배치 — 가운데에 큰 단어가 모이지 않게
+  const sorted = [...keywords].sort((a,b) => b.count - a.count);
+  // 홀짝 인터리브: 최대→최소→2번째→꼴찌-1 … 패턴으로 시각적 균형
+  const interleaved = [];
+  let lo = sorted.length - 1, hi = 0;
+  while (hi <= lo) {
+    interleaved.push(sorted[hi++]);
+    if (hi <= lo) interleaved.push(sorted[lo--]);
+  }
+
+  wrap.innerHTML = `<div class="wordcloud-wrap">${
+    interleaved.map((k, i) => {
+      const ratio  = k.count / maxCount;
+      const size   = Math.round(13 + ratio * 32);   // 13 ~ 45px
+      const weight = size >= 28 ? 800 : 600;
+      const color  = palette[i % palette.length];
+      const op     = (0.65 + ratio * 0.35).toFixed(2);
+      const rotate = (i % 5 === 2) ? 'rotate(-20deg)' : (i % 7 === 4) ? 'rotate(15deg)' : 'none';
+      return `<span
+        style="font-size:${size}px;font-weight:${weight};color:${color};opacity:${op};
+               padding:4px 7px;display:inline-block;line-height:1.2;cursor:default;
+               transition:transform .18s,opacity .18s;white-space:nowrap;transform:${rotate};"
+        onmouseenter="this.style.transform='scale(1.15)';this.style.opacity='1';"
+        onmouseleave="this.style.transform='${rotate}';this.style.opacity='${op}';"
+        title="${k.word} · ${k.count}회 언급">${k.word}</span>`;
+    }).join('')
+  }</div>`;
 }
 
 function renderStats(data) {
