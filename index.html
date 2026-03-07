@@ -396,6 +396,19 @@ function renderPresets() {
 async function saveSourcesToGitHub() {
   const token = getToken();
   if (!token) { toast('🔑 먼저 GitHub 토큰을 설정하세요.', 'error'); return; }
+
+  // SHA가 없거나 불확실하면 저장 전 항상 최신 SHA 조회
+  try {
+    const r = await fetch(
+      `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${SOURCES_FILE}`,
+      { headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } }
+    );
+    if (r.ok) {
+      const d = await r.json();
+      sourcesFileSHA = d.sha;
+    }
+  } catch(e) { /* 신규 파일이면 SHA 없어도 됨 */ }
+
   const content = JSON.stringify({ sources }, null, 2);
   const encoded = btoa(unescape(encodeURIComponent(content)));
   const body = {
@@ -404,6 +417,7 @@ async function saveSourcesToGitHub() {
     branch: 'main'
   };
   if (sourcesFileSHA) body.sha = sourcesFileSHA;
+
   try {
     const res = await fetch(
       `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${SOURCES_FILE}`,
