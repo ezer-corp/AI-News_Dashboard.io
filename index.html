@@ -310,7 +310,7 @@ async function loadSourcesFromGitHub() {
     if (!res.ok) throw new Error('fetch failed');
     const data = await res.json();
     sourcesFileSHA = data.sha;
-    const decoded = JSON.parse(atob(data.content.replace(/\n/g, '')));
+    const decoded = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
     sources = decoded.sources || [];
   } catch(e) {
     // 토큰 없어도 public repo는 읽기 가능 (raw)
