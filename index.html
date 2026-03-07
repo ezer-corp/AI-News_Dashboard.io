@@ -15,37 +15,31 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
 
-  /* 헤더 */
   header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
   .logo { font-size: 18px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
   .update-time { font-size: 12px; color: var(--text2); }
   .update-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-  /* 탭 */
-  .tabs { display: flex; gap: 4px; padding: 16px 24px 0; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .tabs { display: flex; gap: 4px; padding: 16px 24px 0; border-bottom: 1px solid var(--border); overflow-x: auto; background: var(--surface); }
   .tab { padding: 8px 16px; border-radius: 6px 6px 0 0; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text2); border: 1px solid transparent; border-bottom: none; transition: all 0.2s; white-space: nowrap; }
   .tab:hover { color: var(--text); background: var(--surface2); }
-  .tab.active { color: var(--accent); background: var(--surface); border-color: var(--border); margin-bottom: -1px; }
+  .tab.active { color: var(--accent); background: var(--bg); border-color: var(--border); margin-bottom: -1px; }
 
-  /* 메인 */
   main { padding: 24px; max-width: 1200px; margin: 0 auto; }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
-  /* 요약 카드 */
   .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
   .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
   .stat-card .label { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
   .stat-card .value { font-size: 28px; font-weight: 700; }
   .stat-card .sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
 
-  /* 차트 영역 */
   .chart-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 28px; }
   .chart-section h3 { font-size: 14px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
   .chart-wrap { height: 220px; }
 
-  /* 뉴스 그리드 */
   .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
   .news-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; transition: border-color 0.2s; display: flex; flex-direction: column; }
   .news-card:hover { border-color: var(--accent); }
@@ -63,7 +57,6 @@
   .read-more { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 500; }
   .read-more:hover { text-decoration: underline; }
 
-  /* 유튜브 카드 */
   .yt-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; display: flex; gap: 14px; margin-bottom: 14px; transition: border-color 0.2s; }
   .yt-card:hover { border-color: var(--red); }
   .yt-thumb { width: 120px; height: 68px; background: var(--surface2); border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--red); font-size: 24px; }
@@ -71,12 +64,59 @@
   .yt-info p { font-size: 12px; color: var(--text2); line-height: 1.5; }
   .yt-meta { font-size: 11px; color: var(--text2); margin-top: 8px; }
 
-  /* 빈 상태 */
+  /* ── 소스 관리 탭 ── */
+  .sources-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media(max-width:700px){ .sources-layout { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .panel-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+  .source-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--surface2); margin-bottom: 8px; transition: background 0.2s; }
+  .source-item:hover { background: #2d333b; }
+  .source-toggle { width: 36px; height: 20px; background: var(--border); border-radius: 10px; cursor: pointer; position: relative; flex-shrink: 0; transition: background 0.2s; border: none; }
+  .source-toggle.on { background: var(--green); }
+  .source-toggle::after { content:''; position:absolute; width:14px; height:14px; background:#fff; border-radius:50%; top:3px; left:3px; transition: left 0.2s; }
+  .source-toggle.on::after { left:19px; }
+  .source-info { flex: 1; min-width: 0; }
+  .source-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .source-url { font-size: 11px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .source-cat { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
+  .required-badge { font-size: 10px; color: var(--yellow); flex-shrink: 0; }
+  .btn-del { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 16px; flex-shrink: 0; padding: 2px 6px; border-radius: 4px; transition: color 0.2s; }
+  .btn-del:hover { color: var(--red); }
+
+  .add-form { display: flex; flex-direction: column; gap: 10px; }
+  .form-row { display: flex; gap: 8px; }
+  .inp { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-size: 13px; width: 100%; outline: none; transition: border-color 0.2s; }
+  .inp:focus { border-color: var(--accent); }
+  .inp::placeholder { color: var(--text2); }
+  select.inp { cursor: pointer; }
+  .btn { padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.2s; }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: var(--accent); color: #0d1117; }
+  .btn-success { background: var(--green); color: #0d1117; }
+  .btn-warning { background: var(--yellow); color: #0d1117; }
+  .btn-full { width: 100%; }
+
+  .token-section { margin-bottom: 20px; padding: 14px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); }
+  .token-section .token-title { font-size: 12px; color: var(--text2); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .token-status { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+  .token-status.set { background: rgba(63,185,80,0.2); color: var(--green); }
+  .token-status.unset { background: rgba(248,81,73,0.2); color: var(--red); }
+  .token-input-row { display: flex; gap: 8px; }
+
+  .save-bar { position: sticky; bottom: 16px; background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+  .save-bar p { font-size: 13px; color: var(--text2); }
+  .save-bar.hidden { display: none; }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; font-size: 13px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 999; display: none; max-width: 320px; }
+  .toast.show { display: block; animation: fadeIn 0.3s; }
+  .toast.success { border-color: var(--green); }
+  .toast.error { border-color: var(--red); }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
   .empty-state { text-align: center; padding: 60px 20px; color: var(--text2); }
   .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
-
-  /* 로딩 */
-  .loading { text-align: center; padding: 40px; color: var(--text2); font-size: 14px; }
 
   @media (max-width: 600px) {
     .news-grid { grid-template-columns: 1fr; }
@@ -95,11 +135,12 @@
 </header>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('all', this)">🗂️ 전체</div>
-  <div class="tab" onclick="switchTab('tech', this)">🔬 기술 트렌드</div>
-  <div class="tab" onclick="switchTab('biz', this)">💼 비즈니스</div>
-  <div class="tab" onclick="switchTab('policy', this)">⚖️ 정책·규제</div>
-  <div class="tab" onclick="switchTab('youtube', this)">📺 유튜브</div>
+  <div class="tab active" onclick="switchTab('all',this)">🗂️ 전체</div>
+  <div class="tab" onclick="switchTab('tech',this)">🔬 기술 트렌드</div>
+  <div class="tab" onclick="switchTab('biz',this)">💼 비즈니스</div>
+  <div class="tab" onclick="switchTab('policy',this)">⚖️ 정책·규제</div>
+  <div class="tab" onclick="switchTab('youtube',this)">📺 유튜브</div>
+  <div class="tab" onclick="switchTab('sources',this)">⚙️ 소스 관리</div>
 </div>
 
 <main>
@@ -134,18 +175,90 @@
     <div id="news-youtube"></div>
   </div>
 
+  <!-- ── 소스 관리 탭 ── -->
+  <div id="tab-sources" class="tab-panel">
+
+    <!-- GitHub 토큰 설정 -->
+    <div class="token-section">
+      <div class="token-title">
+        🔑 GitHub 토큰
+        <span id="token-status" class="token-status unset">미설정</span>
+      </div>
+      <div class="token-input-row">
+        <input class="inp" id="token-inp" type="password" placeholder="ghp_xxxxxxxx  (브라우저 localStorage에만 저장됩니다)">
+        <button class="btn btn-primary" onclick="saveToken()">저장</button>
+        <button class="btn" style="background:var(--surface2);color:var(--text2)" onclick="clearToken()">삭제</button>
+      </div>
+    </div>
+
+    <div class="sources-layout">
+
+      <!-- 현재 소스 목록 -->
+      <div class="panel">
+        <div class="panel-title">📋 현재 수집 소스 <span id="src-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
+        <div id="source-list"></div>
+      </div>
+
+      <!-- 소스 추가 -->
+      <div class="panel">
+        <div class="panel-title">➕ 새 소스 추가</div>
+        <div class="add-form">
+          <input class="inp" id="new-name" placeholder="언론사/사이트 이름 (예: TechCrunch)">
+          <input class="inp" id="new-url" placeholder="URL (예: https://techcrunch.com/ai/)">
+          <div class="form-row">
+            <select class="inp" id="new-cat">
+              <option value="tech">🔬 기술 트렌드</option>
+              <option value="biz">💼 비즈니스</option>
+              <option value="policy">⚖️ 정책·규제</option>
+            </select>
+            <button class="btn btn-primary" onclick="addSource()" style="white-space:nowrap">추가</button>
+          </div>
+          <div style="font-size:12px;color:var(--text2);padding:8px 4px;line-height:1.6">
+            💡 추가한 소스는 다음 오전 6시 스케줄 실행 시 자동 수집됩니다.<br>
+            🔒 토큰은 브라우저에만 저장되며 외부로 전송되지 않습니다.
+          </div>
+        </div>
+
+        <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+          <div class="panel-title" style="margin-bottom:12px">📌 자주 쓰는 AI 언론사</div>
+          <div id="presets" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 저장 바 -->
+    <div id="save-bar" class="save-bar hidden" style="margin-top:20px">
+      <p>⚠️ 변경사항이 있습니다. GitHub에 저장해야 다음 수집에 반영됩니다.</p>
+      <button class="btn btn-success" onclick="saveSourcesToGitHub()">💾 GitHub에 저장</button>
+    </div>
+  </div>
+
 </main>
 
+<!-- 토스트 알림 -->
+<div id="toast" class="toast"></div>
+
 <script>
-// ── 데이터 로드 ──────────────────────────────────────────
-async function loadData() {
-  try {
-    const res = await fetch('data.json?t=' + Date.now());
-    return await res.json();
-  } catch(e) {
-    return null;
-  }
-}
+const GITHUB_USER = 'ezer-corp';
+const GITHUB_REPO = 'AI-News_Dashboard.io';
+const SOURCES_FILE = 'sources.json';
+
+// ── 자주 쓰는 AI 언론사 프리셋 ─────────────────────────────
+const PRESETS = [
+  { name:'TechCrunch AI', url:'https://techcrunch.com/category/artificial-intelligence/', cat:'tech' },
+  { name:'MIT Tech Review', url:'https://www.technologyreview.com/topic/artificial-intelligence/', cat:'tech' },
+  { name:'VentureBeat AI', url:'https://venturebeat.com/category/ai/', cat:'biz' },
+  { name:'The Verge AI', url:'https://www.theverge.com/ai-artificial-intelligence', cat:'tech' },
+  { name:'Wired AI', url:'https://www.wired.com/tag/artificial-intelligence/', cat:'tech' },
+  { name:'AI News Korea', url:'https://www.aitimes.com/', cat:'tech' },
+  { name:'뉴스1 AI', url:'https://www.news1.kr/it-science/', cat:'biz' },
+  { name:'ZDNet Korea', url:'https://zdnet.co.kr/news/?lstcode=0041', cat:'tech' },
+];
+
+// ── 전역 상태 ──────────────────────────────────────────────
+let sources = [];
+let dirty = false;
+let sourcesFileSHA = '';
 
 // ── 탭 전환 ──────────────────────────────────────────────
 function switchTab(id, el) {
@@ -153,23 +266,189 @@ function switchTab(id, el) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('tab-' + id).classList.add('active');
+  if (id === 'sources') initSourcesTab();
 }
 
-// ── 뱃지 ────────────────────────────────────────────────
+// ── 토큰 관리 ─────────────────────────────────────────────
+function getToken() { return localStorage.getItem('gh_token_ai_dashboard') || ''; }
+function saveToken() {
+  const v = document.getElementById('token-inp').value.trim();
+  if (!v) return toast('토큰을 입력하세요.', 'error');
+  localStorage.setItem('gh_token_ai_dashboard', v);
+  document.getElementById('token-inp').value = '';
+  updateTokenStatus();
+  toast('✅ 토큰이 저장되었습니다.', 'success');
+}
+function clearToken() {
+  localStorage.removeItem('gh_token_ai_dashboard');
+  updateTokenStatus();
+  toast('토큰이 삭제되었습니다.', 'error');
+}
+function updateTokenStatus() {
+  const el = document.getElementById('token-status');
+  if (!el) return;
+  if (getToken()) {
+    el.textContent = '설정됨'; el.className = 'token-status set';
+  } else {
+    el.textContent = '미설정'; el.className = 'token-status unset';
+  }
+}
+
+// ── 소스 관리 탭 초기화 ───────────────────────────────────
+async function initSourcesTab() {
+  updateTokenStatus();
+  renderPresets();
+  await loadSourcesFromGitHub();
+}
+
+async function loadSourcesFromGitHub() {
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${SOURCES_FILE}`,
+      { headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json' } }
+    );
+    if (!res.ok) throw new Error('fetch failed');
+    const data = await res.json();
+    sourcesFileSHA = data.sha;
+    const decoded = JSON.parse(atob(data.content.replace(/\n/g, '')));
+    sources = decoded.sources || [];
+  } catch(e) {
+    // 토큰 없어도 public repo는 읽기 가능 (raw)
+    try {
+      const r = await fetch(`https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${SOURCES_FILE}?t=${Date.now()}`);
+      const decoded = await r.json();
+      sources = decoded.sources || [];
+    } catch(e2) { sources = []; }
+  }
+  dirty = false;
+  renderSourceList();
+  hideSaveBar();
+}
+
+// ── 소스 렌더 ─────────────────────────────────────────────
+function catBadge(cat) {
+  const map = { tech:['rgba(88,166,255,0.15)','#58a6ff','🔬'], biz:['rgba(63,185,80,0.15)','#3fb950','💼'], policy:['rgba(210,153,34,0.15)','#d29922','⚖️'] };
+  const [bg, color, icon] = map[cat] || map.tech;
+  return `<span class="source-cat" style="background:${bg};color:${color}">${icon} ${cat}</span>`;
+}
+
+function renderSourceList() {
+  const el = document.getElementById('source-list');
+  document.getElementById('src-count').textContent = `(${sources.length}개)`;
+  if (!sources.length) { el.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:12px">소스가 없습니다.</div>'; return; }
+  el.innerHTML = sources.map((s, i) => `
+    <div class="source-item">
+      <button class="source-toggle ${s.enabled ? 'on' : ''}" onclick="toggleSource(${i})" title="${s.enabled ? '비활성화' : '활성화'}"></button>
+      <div class="source-info">
+        <div class="source-name">${s.name}</div>
+        <div class="source-url"><a href="${s.url}" target="_blank" style="color:var(--text2);text-decoration:none;">${s.url}</a></div>
+      </div>
+      ${catBadge(s.category)}
+      ${s.required ? '<span class="required-badge" title="필수 소스">🔒</span>' : `<button class="btn-del" onclick="deleteSource(${i})" title="삭제">✕</button>`}
+    </div>`).join('');
+}
+
+function toggleSource(i) {
+  if (sources[i].required) { toast('🔒 필수 소스는 비활성화할 수 없습니다.', 'error'); return; }
+  sources[i].enabled = !sources[i].enabled;
+  renderSourceList();
+  markDirty();
+}
+
+function deleteSource(i) {
+  if (sources[i].required) { toast('🔒 필수 소스는 삭제할 수 없습니다.', 'error'); return; }
+  if (!confirm(`"${sources[i].name}"을(를) 삭제할까요?`)) return;
+  sources.splice(i, 1);
+  renderSourceList();
+  markDirty();
+}
+
+function addSource() {
+  const name = document.getElementById('new-name').value.trim();
+  const url  = document.getElementById('new-url').value.trim();
+  const cat  = document.getElementById('new-cat').value;
+  if (!name) { toast('이름을 입력하세요.', 'error'); return; }
+  if (!url || !url.startsWith('http')) { toast('올바른 URL을 입력하세요.', 'error'); return; }
+  if (sources.find(s => s.url === url)) { toast('이미 추가된 URL입니다.', 'error'); return; }
+  sources.push({ name, url, category: cat, enabled: true, required: false });
+  document.getElementById('new-name').value = '';
+  document.getElementById('new-url').value = '';
+  renderSourceList();
+  markDirty();
+  toast(`✅ "${name}" 소스가 추가됐습니다.`, 'success');
+}
+
+function addPreset(p) {
+  if (sources.find(s => s.url === p.url)) { toast('이미 추가된 소스입니다.', 'error'); return; }
+  sources.push({ name: p.name, url: p.url, category: p.cat, enabled: true, required: false });
+  renderSourceList();
+  markDirty();
+  toast(`✅ "${p.name}" 추가됐습니다.`, 'success');
+}
+
+function renderPresets() {
+  document.getElementById('presets').innerHTML = PRESETS.map(p =>
+    `<button class="btn" style="background:var(--surface2);color:var(--text);font-size:11px;padding:5px 10px" onclick='addPreset(${JSON.stringify(p)})'>${p.name}</button>`
+  ).join('');
+}
+
+// ── GitHub 저장 ───────────────────────────────────────────
+async function saveSourcesToGitHub() {
+  const token = getToken();
+  if (!token) { toast('🔑 먼저 GitHub 토큰을 설정하세요.', 'error'); return; }
+  const content = JSON.stringify({ sources }, null, 2);
+  const encoded = btoa(unescape(encodeURIComponent(content)));
+  const body = {
+    message: `sources: 수집 소스 업데이트 (${new Date().toLocaleDateString('ko-KR')})`,
+    content: encoded,
+    branch: 'main'
+  };
+  if (sourcesFileSHA) body.sha = sourcesFileSHA;
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${SOURCES_FILE}`,
+      { method: 'PUT', headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    );
+    if (!res.ok) { const e = await res.json(); throw new Error(e.message); }
+    const data = await res.json();
+    sourcesFileSHA = data.content.sha;
+    dirty = false;
+    hideSaveBar();
+    toast('✅ GitHub에 저장됐습니다! 다음 오전 6시 실행 시 반영됩니다.', 'success');
+  } catch(e) {
+    toast('❌ 저장 실패: ' + e.message, 'error');
+  }
+}
+
+function markDirty() { dirty = true; document.getElementById('save-bar').classList.remove('hidden'); }
+function hideSaveBar() { document.getElementById('save-bar').classList.add('hidden'); }
+
+// ── 토스트 ────────────────────────────────────────────────
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ── 뉴스 렌더 ─────────────────────────────────────────────
+async function loadData() {
+  try {
+    const res = await fetch('data.json?t=' + Date.now());
+    return await res.json();
+  } catch(e) { return null; }
+}
+
 function badge(cat) {
   const map = { tech:'badge-tech', biz:'badge-biz', policy:'badge-policy', youtube:'badge-youtube' };
   const label = { tech:'기술 트렌드', biz:'비즈니스', policy:'정책·규제', youtube:'YouTube' };
   return `<span class="category-badge ${map[cat]||'badge-tech'}">${label[cat]||cat}</span>`;
 }
 
-// ── 뉴스 카드 렌더 ────────────────────────────────────────
 function renderCard(item) {
-  return `
-  <div class="news-card">
-    <div class="card-top">
-      ${badge(item.category)}
-      <span class="card-date">${item.date||''}</span>
-    </div>
+  return `<div class="news-card">
+    <div class="card-top">${badge(item.category)}<span class="card-date">${item.date||''}</span></div>
     <h4>${item.title}</h4>
     <p>${item.summary}</p>
     <div class="card-footer">
@@ -179,42 +458,30 @@ function renderCard(item) {
   </div>`;
 }
 
-// ── 유튜브 카드 렌더 ──────────────────────────────────────
 function renderYtCard(item) {
-  return `
-  <div class="yt-card">
+  return `<div class="yt-card">
     <div class="yt-thumb">▶</div>
     <div class="yt-info">
       <h4>${item.title}</h4>
       <p>${item.summary}</p>
-      <div class="yt-meta">
-        📺 NTD Korea &nbsp;|&nbsp; ${item.date||''}
+      <div class="yt-meta">📺 NTD Korea &nbsp;|&nbsp; ${item.date||''}
         ${item.url ? `&nbsp;|&nbsp; <a class="read-more" href="${item.url}" target="_blank">영상 보기 →</a>` : ''}
       </div>
     </div>
   </div>`;
 }
 
-// ── 키워드 차트 ───────────────────────────────────────────
 function renderChart(keywords) {
-  if (!keywords || keywords.length === 0) return;
+  if (!keywords || !keywords.length) return;
   const ctx = document.getElementById('keyword-chart').getContext('2d');
   new Chart(ctx, {
     type: 'bar',
     data: {
       labels: keywords.map(k => k.word),
-      datasets: [{
-        data: keywords.map(k => k.count),
-        backgroundColor: 'rgba(88,166,255,0.7)',
-        borderColor: 'rgba(88,166,255,1)',
-        borderWidth: 1,
-        borderRadius: 4,
-      }]
+      datasets: [{ data: keywords.map(k => k.count), backgroundColor: 'rgba(88,166,255,0.7)', borderColor: 'rgba(88,166,255,1)', borderWidth: 1, borderRadius: 4 }]
     },
     options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
         x: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
@@ -224,52 +491,41 @@ function renderChart(keywords) {
   });
 }
 
-// ── 통계 카드 ─────────────────────────────────────────────
 function renderStats(data) {
-  const total = data.news ? data.news.length : 0;
-  const byCategory = {};
-  (data.news || []).forEach(n => { byCategory[n.category] = (byCategory[n.category]||0) + 1; });
-  const ytCount = (data.youtube || []).length;
+  const news = data.news || [];
+  const byC = {};
+  news.forEach(n => { byC[n.category] = (byC[n.category]||0) + 1; });
   document.getElementById('stat-cards').innerHTML = `
-    <div class="stat-card"><div class="label">총 뉴스</div><div class="value" style="color:var(--accent)">${total}</div><div class="sub">오늘 수집</div></div>
-    <div class="stat-card"><div class="label">기술 트렌드</div><div class="value" style="color:var(--accent)">${byCategory.tech||0}</div><div class="sub">기사</div></div>
-    <div class="stat-card"><div class="label">비즈니스</div><div class="value" style="color:var(--green)">${byCategory.biz||0}</div><div class="sub">기사</div></div>
-    <div class="stat-card"><div class="label">정책·규제</div><div class="value" style="color:var(--yellow)">${byCategory.policy||0}</div><div class="sub">기사</div></div>
-    <div class="stat-card"><div class="label">YouTube</div><div class="value" style="color:var(--red)">${ytCount}</div><div class="sub">NTD Korea</div></div>
-  `;
+    <div class="stat-card"><div class="label">총 뉴스</div><div class="value" style="color:var(--accent)">${news.length}</div><div class="sub">오늘 수집</div></div>
+    <div class="stat-card"><div class="label">기술 트렌드</div><div class="value" style="color:var(--accent)">${byC.tech||0}</div><div class="sub">기사</div></div>
+    <div class="stat-card"><div class="label">비즈니스</div><div class="value" style="color:var(--green)">${byC.biz||0}</div><div class="sub">기사</div></div>
+    <div class="stat-card"><div class="label">정책·규제</div><div class="value" style="color:var(--yellow)">${byC.policy||0}</div><div class="sub">기사</div></div>
+    <div class="stat-card"><div class="label">YouTube</div><div class="value" style="color:var(--red)">${(data.youtube||[]).length}</div><div class="sub">NTD Korea</div></div>`;
 }
 
-// ── 메인 렌더 ─────────────────────────────────────────────
 async function render() {
   const data = await loadData();
   if (!data) {
     ['all','tech','biz','policy'].forEach(t => {
       const el = document.getElementById('news-' + t);
-      if (el) el.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>데이터를 불러오는 중입니다.<br>첫 업데이트는 매일 오전 6시에 실행됩니다.</p></div>';
+      if (el) el.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>매일 오전 6시에 자동 업데이트됩니다.</p></div>';
     });
     document.getElementById('last-updated').textContent = '업데이트 대기 중';
     return;
   }
-
-  document.getElementById('last-updated').textContent = '마지막 업데이트: ' + (data.updated_at || '알 수 없음');
+  document.getElementById('last-updated').textContent = '마지막 업데이트: ' + (data.updated_at||'');
   renderStats(data);
-  renderChart(data.keywords || []);
-
-  // 뉴스 렌더
+  renderChart(data.keywords||[]);
   const news = data.news || [];
-  document.getElementById('news-all').innerHTML = news.map(renderCard).join('') || '<div class="empty-state"><div class="icon">📭</div><p>오늘의 뉴스가 없습니다.</p></div>';
+  document.getElementById('news-all').innerHTML = news.map(renderCard).join('') || '<div class="empty-state"><div class="icon">📭</div><p>뉴스가 없습니다.</p></div>';
   ['tech','biz','policy'].forEach(cat => {
-    const filtered = news.filter(n => n.category === cat);
-    document.getElementById('news-' + cat).innerHTML = filtered.map(renderCard).join('') || '<div class="empty-state"><div class="icon">📭</div><p>해당 카테고리의 뉴스가 없습니다.</p></div>';
+    const f = news.filter(n => n.category === cat);
+    document.getElementById('news-' + cat).innerHTML = f.map(renderCard).join('') || '<div class="empty-state"><div class="icon">📭</div><p>해당 카테고리 뉴스가 없습니다.</p></div>';
   });
-
-  // 유튜브 렌더
-  const yt = data.youtube || [];
-  document.getElementById('news-youtube').innerHTML = yt.map(renderYtCard).join('') || '<div class="empty-state"><div class="icon">📺</div><p>최근 유튜브 영상이 없습니다.</p></div>';
+  document.getElementById('news-youtube').innerHTML = (data.youtube||[]).map(renderYtCard).join('') || '<div class="empty-state"><div class="icon">📺</div><p>최근 유튜브 영상이 없습니다.</p></div>';
 }
 
 render();
 </script>
-
 </body>
 </html>
