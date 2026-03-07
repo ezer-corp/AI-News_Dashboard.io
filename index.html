@@ -88,16 +88,18 @@ header{
 
 /* ── 모바일 슬라이드 메뉴 ──────────────────────────────── */
 .mobile-menu{
-  display:none;position:fixed;top:56px;left:0;right:0;
+  /* display:none 제거 — transition이 작동하려면 항상 렌더트리에 있어야 함 */
+  position:fixed;top:56px;left:0;right:0;
   background:var(--surface);border-bottom:1px solid var(--border);
   box-shadow:0 8px 24px var(--shadow);z-index:190;
-  /* 슬라이드 다운 */
-  transform:translateY(-8px);opacity:0;
-  transition:transform .25s cubic-bezier(.4,0,.2,1), opacity .25s;
+  transform:translateY(-6px);opacity:0;
+  transition:transform .25s cubic-bezier(.4,0,.2,1), opacity .2s;
   pointer-events:none;
+  visibility:hidden;
 }
 .mobile-menu.open{
-  transform:translateY(0);opacity:1;pointer-events:auto;
+  transform:translateY(0);opacity:1;
+  pointer-events:auto;visibility:visible;
 }
 .mobile-menu-item{
   display:flex;align-items:center;gap:12px;
