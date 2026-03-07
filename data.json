@@ -1,0 +1,79 @@
+{
+  "updated_at": "2026-03-07 06:00 KST",
+  "news": [
+    {
+      "category": "tech",
+      "title": "앤트로픽·Mozilla 협력: Claude가 Firefox 보안 취약점 22개 발견",
+      "summary": "Claude Opus 4.6이 2주간 Firefox의 약 6,000개 C++ 파일을 스캔하여 22개 취약점을 발견했으며, 이 중 14개가 높은 심각도로 분류됐습니다. 이는 2025년 Firefox 전체 심각 취약점의 약 5분의 1에 해당하는 수치로, AI의 보안 분야 활용 가능성을 입증했습니다.",
+      "source": "Anthropic",
+      "date": "2026-03-06",
+      "url": "https://www.anthropic.com/news/mozilla-firefox-security"
+    },
+    {
+      "category": "tech",
+      "title": "에이전틱 엔지니어링 패턴: 코딩 에이전트 시대의 개발 방식",
+      "summary": "Simon Willison이 코딩 에이전트를 효과적으로 활용하기 위한 실무 패턴을 정리했습니다. \"코드 작성 비용이 저렴해진 시대\"에 TDD, 테스트 우선 실행, 대화형 코드 이해 중심의 접근법을 강조합니다.",
+      "source": "Simon Willison (GeekNews)",
+      "date": "2026-03-07",
+      "url": "https://simonwillison.net/guides/agentic-engineering-patterns/"
+    },
+    {
+      "category": "tech",
+      "title": "Paperclip: AI 에이전트 팀이 자율 운영하는 회사 만들기",
+      "summary": "AI 에이전트들을 CEO·CTO·엔지니어 등 계층적 조직도로 구성하고 자율적으로 운영하는 오픈소스 플랫폼입니다. 에이전트당 월간 예산 설정으로 비용을 제어하고, 모든 의사결정이 티켓으로 기록됩니다.",
+      "source": "Paperclip (GeekNews)",
+      "date": "2026-03-07",
+      "url": "https://paperclip.ing/"
+    },
+    {
+      "category": "biz",
+      "title": "코딩 없이 Claude Code로 AI 마케팅 팀 7명을 1주일간 운영한 사례",
+      "summary": "Claude Code와 Cowork를 활용하여 CMO·콘텐츠 작가 등 7명 규모의 AI 마케팅 팀을 코드 없이 구성·자동화 운영한 실험 사례가 공개됐습니다. 비개발자도 멀티 에이전트 팀 운영이 가능한 시대가 열리고 있음을 보여줍니다.",
+      "source": "Runbear Blog (GeekNews)",
+      "date": "2026-03-07",
+      "url": "https://snow.runbear.io/how-i-built-an-ai-marketing-team-with-claude-code-and-cowork-f3405a53ee22"
+    },
+    {
+      "category": "biz",
+      "title": "OpenAI Symphony: 에이전트 기반 프로젝트 관리 자동화 도구 공개",
+      "summary": "OpenAI가 개발팀이 코드 작성 대신 작업 관리에 집중할 수 있도록 설계된 에이전트 기반 프로젝트 관리 자동화 도구를 GitHub에 오픈소스로 공개했습니다.",
+      "source": "GitHub / GeekNews",
+      "date": "2026-03-07",
+      "url": "https://github.com/openai/symphony"
+    },
+    {
+      "category": "policy",
+      "title": "Anthropic 보고서: AI가 일자리를 빼앗는가? 데이터가 말하는 진실",
+      "summary": "실제 Claude 사용 데이터 기반 분석 결과, AI 고노출 직군의 실업률 격차는 통계적으로 유의미하지 않으나, 22~25세 신입 취업률이 약 14% 하락했습니다. 대규모 해고보다 신규 채용 억제 방식의 조용한 구조조정이 진행 중입니다.",
+      "source": "Anthropic",
+      "date": "2026-03-07",
+      "url": "https://maily.so/oz.talking/posts/wjzdpmemz3p"
+    }
+  ],
+  "youtube": [
+    {
+      "title": "문화대혁명 생존자, \"그들이 가장 두려워하는건 '중국 인민'\" [ATL] (2부)",
+      "summary": "문화대혁명을 직접 경험한 생존자의 증언을 담은 인터뷰입니다. 중국 공산당 체제에 대한 인민의 인식과 변화를 다룹니다.",
+      "date": "2026-03-07",
+      "url": "https://www.youtube.com/watch?v=XOp_iYXIbnA"
+    },
+    {
+      "title": "중국 공산당 박해의 그림자…런던에서도 일어나 [CIF]",
+      "summary": "중국 공산당의 박해가 해외에서도 이어지고 있다는 내용을 다룬 영상입니다. 런던에서 발생한 사례를 중심으로 보도합니다.",
+      "date": "2026-03-07",
+      "url": "https://www.youtube.com/watch?v=DwrjkmtAIrY"
+    }
+  ],
+  "keywords": [
+    {"word": "Claude", "count": 8},
+    {"word": "에이전트", "count": 7},
+    {"word": "AI", "count": 6},
+    {"word": "자동화", "count": 5},
+    {"word": "보안", "count": 4},
+    {"word": "오픈소스", "count": 4},
+    {"word": "취약점", "count": 3},
+    {"word": "노동시장", "count": 3},
+    {"word": "OpenAI", "count": 3},
+    {"word": "Anthropic", "count": 3}
+  ]
+}

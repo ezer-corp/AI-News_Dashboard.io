@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 뉴스 대시보드 | EZER Corp</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #21262d;
+    --border: #30363d; --text: #e6edf3; --text2: #8b949e;
+    --accent: #58a6ff; --green: #3fb950; --yellow: #d29922;
+    --red: #f85149; --purple: #bc8cff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* 헤더 */
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 18px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .update-time { font-size: 12px; color: var(--text2); }
+  .update-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* 탭 */
+  .tabs { display: flex; gap: 4px; padding: 16px 24px 0; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .tab { padding: 8px 16px; border-radius: 6px 6px 0 0; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text2); border: 1px solid transparent; border-bottom: none; transition: all 0.2s; white-space: nowrap; }
+  .tab:hover { color: var(--text); background: var(--surface2); }
+  .tab.active { color: var(--accent); background: var(--surface); border-color: var(--border); margin-bottom: -1px; }
+
+  /* 메인 */
+  main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* 요약 카드 */
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
+  .stat-card .label { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .stat-card .value { font-size: 28px; font-weight: 700; }
+  .stat-card .sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  /* 차트 영역 */
+  .chart-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 28px; }
+  .chart-section h3 { font-size: 14px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+  .chart-wrap { height: 220px; }
+
+  /* 뉴스 그리드 */
+  .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .news-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; transition: border-color 0.2s; display: flex; flex-direction: column; }
+  .news-card:hover { border-color: var(--accent); }
+  .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .category-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
+  .badge-tech { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .badge-biz { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge-policy { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .badge-youtube { background: rgba(248,81,73,0.15); color: var(--red); }
+  .card-date { font-size: 11px; color: var(--text2); }
+  .news-card h4 { font-size: 15px; font-weight: 600; line-height: 1.4; margin-bottom: 8px; color: var(--text); }
+  .news-card p { font-size: 13px; color: var(--text2); line-height: 1.6; flex: 1; }
+  .card-footer { margin-top: 14px; display: flex; align-items: center; justify-content: space-between; }
+  .source { font-size: 11px; color: var(--text2); }
+  .read-more { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 500; }
+  .read-more:hover { text-decoration: underline; }
+
+  /* 유튜브 카드 */
+  .yt-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; display: flex; gap: 14px; margin-bottom: 14px; transition: border-color 0.2s; }
+  .yt-card:hover { border-color: var(--red); }
+  .yt-thumb { width: 120px; height: 68px; background: var(--surface2); border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--red); font-size: 24px; }
+  .yt-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; line-height: 1.4; }
+  .yt-info p { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .yt-meta { font-size: 11px; color: var(--text2); margin-top: 8px; }
+
+  /* 빈 상태 */
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* 로딩 */
+  .loading { text-align: center; padding: 40px; color: var(--text2); font-size: 14px; }
+
+  @media (max-width: 600px) {
+    .news-grid { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🤖 AI 뉴스 대시보드</div>
+  <div class="update-time">
+    <span class="update-dot"></span>
+    <span id="last-updated">로딩 중...</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('all', this)">🗂️ 전체</div>
+  <div class="tab" onclick="switchTab('tech', this)">🔬 기술 트렌드</div>
+  <div class="tab" onclick="switchTab('biz', this)">💼 비즈니스</div>
+  <div class="tab" onclick="switchTab('policy', this)">⚖️ 정책·규제</div>
+  <div class="tab" onclick="switchTab('youtube', this)">📺 유튜브</div>
+</div>
+
+<main>
+
+  <!-- 전체 탭 -->
+  <div id="tab-all" class="tab-panel active">
+    <div class="summary-grid" id="stat-cards"></div>
+    <div class="chart-section">
+      <h3>📊 오늘의 키워드 트렌드 Top 10</h3>
+      <div class="chart-wrap"><canvas id="keyword-chart"></canvas></div>
+    </div>
+    <div class="news-grid" id="news-all"></div>
+  </div>
+
+  <!-- 기술 탭 -->
+  <div id="tab-tech" class="tab-panel">
+    <div class="news-grid" id="news-tech"></div>
+  </div>
+
+  <!-- 비즈니스 탭 -->
+  <div id="tab-biz" class="tab-panel">
+    <div class="news-grid" id="news-biz"></div>
+  </div>
+
+  <!-- 정책 탭 -->
+  <div id="tab-policy" class="tab-panel">
+    <div class="news-grid" id="news-policy"></div>
+  </div>
+
+  <!-- 유튜브 탭 -->
+  <div id="tab-youtube" class="tab-panel">
+    <div id="news-youtube"></div>
+  </div>
+
+</main>
+
+<script>
+// ── 데이터 로드 ──────────────────────────────────────────
+async function loadData() {
+  try {
+    const res = await fetch('data.json?t=' + Date.now());
+    return await res.json();
+  } catch(e) {
+    return null;
+  }
+}
+
+// ── 탭 전환 ──────────────────────────────────────────────
+function switchTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+// ── 뱃지 ────────────────────────────────────────────────
+function badge(cat) {
+  const map = { tech:'badge-tech', biz:'badge-biz', policy:'badge-policy', youtube:'badge-youtube' };
+  const label = { tech:'기술 트렌드', biz:'비즈니스', policy:'정책·규제', youtube:'YouTube' };
+  return `<span class="category-badge ${map[cat]||'badge-tech'}">${label[cat]||cat}</span>`;
+}
+
+// ── 뉴스 카드 렌더 ────────────────────────────────────────
+function renderCard(item) {
+  return `
+  <div class="news-card">
+    <div class="card-top">
+      ${badge(item.category)}
+      <span class="card-date">${item.date||''}</span>
+    </div>
+    <h4>${item.title}</h4>
+    <p>${item.summary}</p>
+    <div class="card-footer">
+      <span class="source">📰 ${item.source||''}</span>
+      ${item.url ? `<a class="read-more" href="${item.url}" target="_blank">원문 보기 →</a>` : ''}
+    </div>
+  </div>`;
+}
+
+// ── 유튜브 카드 렌더 ──────────────────────────────────────
+function renderYtCard(item) {
+  return `
+  <div class="yt-card">
+    <div class="yt-thumb">▶</div>
+    <div class="yt-info">
+      <h4>${item.title}</h4>
+      <p>${item.summary}</p>
+      <div class="yt-meta">
+        📺 NTD Korea &nbsp;|&nbsp; ${item.date||''}
+        ${item.url ? `&nbsp;|&nbsp; <a class="read-more" href="${item.url}" target="_blank">영상 보기 →</a>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── 키워드 차트 ───────────────────────────────────────────
+function renderChart(keywords) {
+  if (!keywords || keywords.length === 0) return;
+  const ctx = document.getElementById('keyword-chart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: keywords.map(k => k.word),
+      datasets: [{
+        data: keywords.map(k => k.count),
+        backgroundColor: 'rgba(88,166,255,0.7)',
+        borderColor: 'rgba(88,166,255,1)',
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
+        y: { grid: { display: false }, ticks: { color: '#e6edf3', font: { size: 12 } } }
+      }
+    }
+  });
+}
+
+// ── 통계 카드 ─────────────────────────────────────────────
+function renderStats(data) {
+  const total = data.news ? data.news.length : 0;
+  const byCategory = {};
+  (data.news || []).forEach(n => { byCategory[n.category] = (byCategory[n.category]||0) + 1; });
+  const ytCount = (data.youtube || []).length;
+  document.getElementById('stat-cards').innerHTML = `
+    <div class="stat-card"><div class="label">총 뉴스</div><div class="value" style="color:var(--accent)">${total}</div><div class="sub">오늘 수집</div></div>
+    <div class="stat-card"><div class="label">기술 트렌드</div><div class="value" style="color:var(--accent)">${byCategory.tech||0}</div><div class="sub">기사</div></div>
+    <div class="stat-card"><div class="label">비즈니스</div><div class="value" style="color:var(--green)">${byCategory.biz||0}</div><div class="sub">기사</div></div>
+    <div class="stat-card"><div class="label">정책·규제</div><div class="value" style="color:var(--yellow)">${byCategory.policy||0}</div><div class="sub">기사</div></div>
+    <div class="stat-card"><div class="label">YouTube</div><div class="value" style="color:var(--red)">${ytCount}</div><div class="sub">NTD Korea</div></div>
+  `;
+}
+
+// ── 메인 렌더 ─────────────────────────────────────────────
+async function render() {
+  const data = await loadData();
+  if (!data) {
+    ['all','tech','biz','policy'].forEach(t => {
+      const el = document.getElementById('news-' + t);
+      if (el) el.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>데이터를 불러오는 중입니다.<br>첫 업데이트는 매일 오전 6시에 실행됩니다.</p></div>';
+    });
+    document.getElementById('last-updated').textContent = '업데이트 대기 중';
+    return;
+  }
+
+  document.getElementById('last-updated').textContent = '마지막 업데이트: ' + (data.updated_at || '알 수 없음');
+  renderStats(data);
+  renderChart(data.keywords || []);
+
+  // 뉴스 렌더
+  const news = data.news || [];
+  document.getElementById('news-all').innerHTML = news.map(renderCard).join('') || '<div class="empty-state"><div class="icon">📭</div><p>오늘의 뉴스가 없습니다.</p></div>';
+  ['tech','biz','policy'].forEach(cat => {
+    const filtered = news.filter(n => n.category === cat);
+    document.getElementById('news-' + cat).innerHTML = filtered.map(renderCard).join('') || '<div class="empty-state"><div class="icon">📭</div><p>해당 카테고리의 뉴스가 없습니다.</p></div>';
+  });
+
+  // 유튜브 렌더
+  const yt = data.youtube || [];
+  document.getElementById('news-youtube').innerHTML = yt.map(renderYtCard).join('') || '<div class="empty-state"><div class="icon">📺</div><p>최근 유튜브 영상이 없습니다.</p></div>';
+}
+
+render();
+</script>
+
+</body>
+</html>
