@@ -1,139 +1,250 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI 뉴스 대시보드 | EZER Corp</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg: #0d1117; --surface: #161b22; --surface2: #21262d;
-    --border: #30363d; --text: #e6edf3; --text2: #8b949e;
-    --accent: #58a6ff; --green: #3fb950; --yellow: #d29922;
-    --red: #f85149; --purple: #bc8cff;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
+/* ── 테마 변수 ─────────────────────────────────────────── */
+:root {
+  --bg:#0d1117; --surface:#161b22; --surface2:#21262d;
+  --border:#30363d; --text:#e6edf3; --text2:#8b949e;
+  --accent:#58a6ff; --green:#3fb950; --yellow:#d29922;
+  --red:#f85149; --purple:#bc8cff;
+  --shadow:rgba(0,0,0,0.4);
+}
+[data-theme="light"] {
+  --bg:#f6f8fa; --surface:#ffffff; --surface2:#f0f2f5;
+  --border:#d0d7de; --text:#1f2328; --text2:#656d76;
+  --accent:#0969da; --green:#1a7f37; --yellow:#9a6700;
+  --red:#cf222e; --purple:#8250df;
+  --shadow:rgba(0,0,0,0.12);
+}
 
-  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-  .logo { font-size: 18px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
-  .update-time { font-size: 12px; color: var(--text2); }
-  .update-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+/* ── 기본 ──────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI','Apple SD Gothic Neo',sans-serif;min-height:100vh;transition:background .2s,color .2s;}
 
-  .tabs { display: flex; gap: 4px; padding: 16px 24px 0; border-bottom: 1px solid var(--border); overflow-x: auto; background: var(--surface); }
-  .tab { padding: 8px 16px; border-radius: 6px 6px 0 0; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text2); border: 1px solid transparent; border-bottom: none; transition: all 0.2s; white-space: nowrap; }
-  .tab:hover { color: var(--text); background: var(--surface2); }
-  .tab.active { color: var(--accent); background: var(--bg); border-color: var(--border); margin-bottom: -1px; }
+/* ── 헤더 ──────────────────────────────────────────────── */
+header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 20px;height:56px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:200;
+  box-shadow:0 1px 4px var(--shadow);
+}
+.logo{font-size:17px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.update-time{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.update-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-  main { padding: 24px; max-width: 1200px; margin: 0 auto; }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+/* 다크모드 토글 */
+.theme-btn{
+  width:36px;height:36px;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface2);cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s,border-color .2s;flex-shrink:0;
+}
+.theme-btn:hover{background:var(--border);}
 
-  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
-  .stat-card .label { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-  .stat-card .value { font-size: 28px; font-weight: 700; }
-  .stat-card .sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+/* ── 데스크탑 탭 ───────────────────────────────────────── */
+.tabs{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-end;gap:2px;
+  padding:0 20px;overflow:hidden; /* 세로 스크롤 완전 제거 */
+  height:44px;flex-shrink:0;
+}
+.tab{
+  padding:0 14px;height:36px;border-radius:6px 6px 0 0;
+  font-size:13px;font-weight:500;cursor:pointer;
+  color:var(--text2);border:1px solid transparent;border-bottom:none;
+  transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:5px;
+  flex-shrink:0;
+}
+.tab:hover{color:var(--text);background:var(--surface2);}
+.tab.active{
+  color:var(--accent);background:var(--bg);
+  border-color:var(--border);margin-bottom:-1px;
+}
 
-  .chart-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 28px; }
-  .chart-section h3 { font-size: 14px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
-  .chart-wrap { height: 220px; }
+/* ── 모바일 하단 내비 ──────────────────────────────────── */
+.mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  z-index:200;box-shadow:0 -2px 12px var(--shadow);
+}
+.mobile-nav-inner{display:flex;align-items:stretch;}
+.mnav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:8px 4px 10px;cursor:pointer;
+  gap:3px;border:none;background:transparent;color:var(--text2);
+  font-size:10px;font-weight:500;transition:color .2s;min-width:0;
+}
+.mnav-item .icon{font-size:20px;line-height:1;}
+.mnav-item.active{color:var(--accent);}
+.mnav-item.active .icon{transform:scale(1.1);}
 
-  .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
-  .news-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; transition: border-color 0.2s; display: flex; flex-direction: column; }
-  .news-card:hover { border-color: var(--accent); }
-  .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .category-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
-  .badge-tech { background: rgba(88,166,255,0.15); color: var(--accent); }
-  .badge-biz { background: rgba(63,185,80,0.15); color: var(--green); }
-  .badge-policy { background: rgba(210,153,34,0.15); color: var(--yellow); }
-  .badge-youtube { background: rgba(248,81,73,0.15); color: var(--red); }
-  .card-date { font-size: 11px; color: var(--text2); }
-  .news-card h4 { font-size: 15px; font-weight: 600; line-height: 1.4; margin-bottom: 8px; color: var(--text); }
-  .news-card p { font-size: 13px; color: var(--text2); line-height: 1.6; flex: 1; }
-  .card-footer { margin-top: 14px; display: flex; align-items: center; justify-content: space-between; }
-  .source { font-size: 11px; color: var(--text2); }
-  .read-more { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 500; }
-  .read-more:hover { text-decoration: underline; }
+/* ── 메인 콘텐츠 ───────────────────────────────────────── */
+main{padding:20px;max-width:1200px;margin:0 auto;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
 
-  .yt-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; display: flex; gap: 14px; margin-bottom: 14px; transition: border-color 0.2s; }
-  .yt-card:hover { border-color: var(--red); }
-  .yt-thumb { width: 120px; height: 68px; background: var(--surface2); border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--red); font-size: 24px; }
-  .yt-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; line-height: 1.4; }
-  .yt-info p { font-size: 12px; color: var(--text2); line-height: 1.5; }
-  .yt-meta { font-size: 11px; color: var(--text2); margin-top: 8px; }
+/* ── 통계 카드 ─────────────────────────────────────────── */
+.summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.stat-card .label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+.stat-card .value{font-size:26px;font-weight:700;}
+.stat-card .sub{font-size:11px;color:var(--text2);margin-top:3px;}
 
-  /* ── 소스 관리 탭 ── */
-  .sources-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media(max-width:700px){ .sources-layout { grid-template-columns: 1fr; } }
+/* ── 차트 ──────────────────────────────────────────────── */
+.chart-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:24px;}
+.chart-section h3{font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px;}
+.chart-wrap{height:220px;}
 
-  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
-  .panel-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+/* ── 뉴스 그리드 ───────────────────────────────────────── */
+.news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+.news-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color .2s,box-shadow .2s;display:flex;flex-direction:column;}
+.news-card:hover{border-color:var(--accent);box-shadow:0 2px 12px var(--shadow);}
+.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.category-badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;}
+.badge-tech{background:rgba(88,166,255,.15);color:var(--accent);}
+.badge-biz{background:rgba(63,185,80,.15);color:var(--green);}
+.badge-policy{background:rgba(210,153,34,.15);color:var(--yellow);}
+.badge-youtube{background:rgba(248,81,73,.15);color:var(--red);}
+.card-date{font-size:11px;color:var(--text2);}
+.news-card h4{font-size:14px;font-weight:600;line-height:1.4;margin-bottom:7px;color:var(--text);}
+.news-card p{font-size:13px;color:var(--text2);line-height:1.65;flex:1;}
+.card-footer{margin-top:12px;display:flex;align-items:center;justify-content:space-between;}
+.source{font-size:11px;color:var(--text2);}
+.read-more{font-size:12px;color:var(--accent);text-decoration:none;font-weight:500;}
+.read-more:hover{text-decoration:underline;}
 
-  .source-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--surface2); margin-bottom: 8px; transition: background 0.2s; }
-  .source-item:hover { background: #2d333b; }
-  .source-toggle { width: 36px; height: 20px; background: var(--border); border-radius: 10px; cursor: pointer; position: relative; flex-shrink: 0; transition: background 0.2s; border: none; }
-  .source-toggle.on { background: var(--green); }
-  .source-toggle::after { content:''; position:absolute; width:14px; height:14px; background:#fff; border-radius:50%; top:3px; left:3px; transition: left 0.2s; }
-  .source-toggle.on::after { left:19px; }
-  .source-info { flex: 1; min-width: 0; }
-  .source-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .source-url { font-size: 11px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .source-cat { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
-  .required-badge { font-size: 10px; color: var(--yellow); flex-shrink: 0; }
-  .btn-del { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 16px; flex-shrink: 0; padding: 2px 6px; border-radius: 4px; transition: color 0.2s; }
-  .btn-del:hover { color: var(--red); }
+/* ── 유튜브 카드 ───────────────────────────────────────── */
+.yt-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;gap:14px;margin-bottom:12px;transition:border-color .2s;}
+.yt-card:hover{border-color:var(--red);}
+.yt-thumb{width:110px;height:62px;background:var(--surface2);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--red);font-size:22px;}
+.yt-info h4{font-size:14px;font-weight:600;margin-bottom:5px;line-height:1.4;}
+.yt-info p{font-size:12px;color:var(--text2);line-height:1.55;}
+.yt-meta{font-size:11px;color:var(--text2);margin-top:7px;}
 
-  .add-form { display: flex; flex-direction: column; gap: 10px; }
-  .form-row { display: flex; gap: 8px; }
-  .inp { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-size: 13px; width: 100%; outline: none; transition: border-color 0.2s; }
-  .inp:focus { border-color: var(--accent); }
-  .inp::placeholder { color: var(--text2); }
-  select.inp { cursor: pointer; }
-  .btn { padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.2s; }
-  .btn:hover { opacity: 0.85; }
-  .btn-primary { background: var(--accent); color: #0d1117; }
-  .btn-success { background: var(--green); color: #0d1117; }
-  .btn-warning { background: var(--yellow); color: #0d1117; }
-  .btn-full { width: 100%; }
+/* ── 소스 관리 탭 ──────────────────────────────────────── */
+.sources-layout{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;}
+.panel-title{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.source-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;background:var(--surface2);margin-bottom:7px;transition:background .2s;}
+.source-item:hover{background:var(--border);}
+.source-toggle{width:34px;height:19px;background:var(--border);border-radius:10px;cursor:pointer;position:relative;flex-shrink:0;transition:background .2s;border:none;}
+.source-toggle.on{background:var(--green);}
+.source-toggle::after{content:'';position:absolute;width:13px;height:13px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left .2s;}
+.source-toggle.on::after{left:18px;}
+.source-info{flex:1;min-width:0;}
+.source-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.source-url{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.source-cat{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;flex-shrink:0;}
+.required-badge{font-size:10px;color:var(--yellow);flex-shrink:0;}
+.btn-del{background:none;border:none;color:var(--text2);cursor:pointer;font-size:15px;flex-shrink:0;padding:2px 5px;border-radius:4px;transition:color .2s;}
+.btn-del:hover{color:var(--red);}
+.add-form{display:flex;flex-direction:column;gap:9px;}
+.form-row{display:flex;gap:7px;}
+.inp{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;width:100%;outline:none;transition:border-color .2s;}
+.inp:focus{border-color:var(--accent);}
+.inp::placeholder{color:var(--text2);}
+select.inp{cursor:pointer;}
+.btn{padding:9px 15px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .2s;white-space:nowrap;}
+.btn:hover{opacity:.85;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-success{background:var(--green);color:#0d1117;}
+[data-theme="light"] .btn-primary{color:#fff;}
+[data-theme="light"] .btn-success{color:#fff;}
+.token-section{margin-bottom:18px;padding:13px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);}
+.token-section .token-title{font-size:12px;color:var(--text2);margin-bottom:7px;display:flex;align-items:center;gap:5px;}
+.token-status{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;}
+.token-status.set{background:rgba(63,185,80,.2);color:var(--green);}
+.token-status.unset{background:rgba(248,81,73,.2);color:var(--red);}
+.token-input-row{display:flex;gap:7px;}
+.save-bar{position:sticky;bottom:16px;background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 4px 20px var(--shadow);margin-top:18px;}
+.save-bar p{font-size:13px;color:var(--text2);}
+.save-bar.hidden{display:none;}
 
-  .token-section { margin-bottom: 20px; padding: 14px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); }
-  .token-section .token-title { font-size: 12px; color: var(--text2); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-  .token-status { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
-  .token-status.set { background: rgba(63,185,80,0.2); color: var(--green); }
-  .token-status.unset { background: rgba(248,81,73,0.2); color: var(--red); }
-  .token-input-row { display: flex; gap: 8px; }
+/* ── 토스트 ────────────────────────────────────────────── */
+.toast{position:fixed;bottom:80px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;box-shadow:0 4px 20px var(--shadow);z-index:999;display:none;max-width:300px;}
+.toast.show{display:block;animation:fadeIn .25s;}
+.toast.success{border-color:var(--green);}
+.toast.error{border-color:var(--red);}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-  .save-bar { position: sticky; bottom: 16px; background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
-  .save-bar p { font-size: 13px; color: var(--text2); }
-  .save-bar.hidden { display: none; }
+/* ── 빈 상태 ────────────────────────────────────────────── */
+.empty-state{text-align:center;padding:50px 20px;color:var(--text2);}
+.empty-state .icon{font-size:38px;margin-bottom:10px;}
 
-  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; font-size: 13px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 999; display: none; max-width: 320px; }
-  .toast.show { display: block; animation: fadeIn 0.3s; }
-  .toast.success { border-color: var(--green); }
-  .toast.error { border-color: var(--red); }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+/* ── 반응형 ─────────────────────────────────────────────── */
 
-  .empty-state { text-align: center; padding: 60px 20px; color: var(--text2); }
-  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+/* 태블릿 */
+@media(max-width:900px){
+  .summary-grid{grid-template-columns:repeat(3,1fr);}
+}
 
-  @media (max-width: 600px) {
-    .news-grid { grid-template-columns: 1fr; }
-    .summary-grid { grid-template-columns: repeat(2, 1fr); }
-  }
+/* 모바일 */
+@media(max-width:640px){
+  /* 헤더 */
+  header{padding:0 14px;height:52px;}
+  .logo{font-size:15px;}
+  .update-time span:last-child{display:none;} /* 업데이트 시각 텍스트 숨김 */
+
+  /* 데스크탑 탭 숨기고 하단 네비 표시 */
+  .tabs{display:none;}
+  .mobile-nav{display:flex;}
+
+  /* 본문 하단 패딩 (하단 네비 높이만큼) */
+  main{padding:14px 12px 80px;}
+
+  /* 통계 카드 2열 */
+  .summary-grid{grid-template-columns:repeat(2,1fr);gap:9px;}
+  .stat-card{padding:12px;}
+  .stat-card .value{font-size:22px;}
+
+  /* 뉴스 1열 */
+  .news-grid{grid-template-columns:1fr;gap:10px;}
+  .news-card{padding:14px;}
+
+  /* 유튜브 카드 세로 배치 */
+  .yt-card{flex-direction:column;gap:10px;}
+  .yt-thumb{width:100%;height:160px;}
+
+  /* 소스 관리 1열 */
+  .sources-layout{grid-template-columns:1fr;}
+  .token-input-row{flex-wrap:wrap;}
+  .token-input-row .inp{min-width:0;}
+
+  /* 저장바 */
+  .save-bar{flex-direction:column;align-items:flex-start;bottom:72px;}
+  .save-bar .btn{width:100%;}
+
+  /* 토스트 위치 */
+  .toast{bottom:88px;left:12px;right:12px;max-width:none;}
+
+  /* 차트 높이 */
+  .chart-wrap{height:180px;}
+}
 </style>
 </head>
 <body>
 
+<!-- ── 헤더 ── -->
 <header>
   <div class="logo">🤖 AI 뉴스 대시보드</div>
-  <div class="update-time">
-    <span class="update-dot"></span>
-    <span id="last-updated">로딩 중...</span>
+  <div class="header-right">
+    <div class="update-time">
+      <span class="update-dot"></span>
+      <span id="last-updated">로딩 중...</span>
+    </div>
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="다크/라이트 모드 전환">🌙</button>
   </div>
 </header>
 
+<!-- ── 데스크탑 탭 ── -->
 <div class="tabs">
   <div class="tab active" onclick="switchTab('all',this)">🗂️ 전체</div>
   <div class="tab" onclick="switchTab('tech',this)">🔬 기술 트렌드</div>
@@ -143,9 +254,9 @@
   <div class="tab" onclick="switchTab('sources',this)">⚙️ 소스 관리</div>
 </div>
 
+<!-- ── 메인 ── -->
 <main>
 
-  <!-- 전체 탭 -->
   <div id="tab-all" class="tab-panel active">
     <div class="summary-grid" id="stat-cards"></div>
     <div class="chart-section">
@@ -155,30 +266,24 @@
     <div class="news-grid" id="news-all"></div>
   </div>
 
-  <!-- 기술 탭 -->
   <div id="tab-tech" class="tab-panel">
     <div class="news-grid" id="news-tech"></div>
   </div>
 
-  <!-- 비즈니스 탭 -->
   <div id="tab-biz" class="tab-panel">
     <div class="news-grid" id="news-biz"></div>
   </div>
 
-  <!-- 정책 탭 -->
   <div id="tab-policy" class="tab-panel">
     <div class="news-grid" id="news-policy"></div>
   </div>
 
-  <!-- 유튜브 탭 -->
   <div id="tab-youtube" class="tab-panel">
     <div id="news-youtube"></div>
   </div>
 
   <!-- ── 소스 관리 탭 ── -->
   <div id="tab-sources" class="tab-panel">
-
-    <!-- GitHub 토큰 설정 -->
     <div class="token-section">
       <div class="token-title">
         🔑 GitHub 토큰
@@ -192,14 +297,11 @@
     </div>
 
     <div class="sources-layout">
-
-      <!-- 현재 소스 목록 -->
       <div class="panel">
         <div class="panel-title">📋 현재 수집 소스 <span id="src-count" style="color:var(--text2);font-weight:400;font-size:12px"></span></div>
         <div id="source-list"></div>
       </div>
 
-      <!-- 소스 추가 -->
       <div class="panel">
         <div class="panel-title">➕ 새 소스 추가</div>
         <div class="add-form">
@@ -211,23 +313,21 @@
               <option value="biz">💼 비즈니스</option>
               <option value="policy">⚖️ 정책·규제</option>
             </select>
-            <button class="btn btn-primary" onclick="addSource()" style="white-space:nowrap">추가</button>
+            <button class="btn btn-primary" onclick="addSource()">추가</button>
           </div>
-          <div style="font-size:12px;color:var(--text2);padding:8px 4px;line-height:1.6">
+          <div style="font-size:12px;color:var(--text2);padding:6px 2px;line-height:1.65">
             💡 추가한 소스는 다음 오전 6시 스케줄 실행 시 자동 수집됩니다.<br>
             🔒 토큰은 브라우저에만 저장되며 외부로 전송되지 않습니다.
           </div>
         </div>
-
-        <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
-          <div class="panel-title" style="margin-bottom:12px">📌 자주 쓰는 AI 언론사</div>
+        <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border)">
+          <div class="panel-title" style="margin-bottom:10px">📌 자주 쓰는 AI 언론사</div>
           <div id="presets" style="display:flex;flex-wrap:wrap;gap:6px"></div>
         </div>
       </div>
     </div>
 
-    <!-- 저장 바 -->
-    <div id="save-bar" class="save-bar hidden" style="margin-top:20px">
+    <div id="save-bar" class="save-bar hidden">
       <p>⚠️ 변경사항이 있습니다. GitHub에 저장해야 다음 수집에 반영됩니다.</p>
       <button class="btn btn-success" onclick="saveSourcesToGitHub()">💾 GitHub에 저장</button>
     </div>
@@ -235,7 +335,30 @@
 
 </main>
 
-<!-- 토스트 알림 -->
+<!-- ── 모바일 하단 네비 ── -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <button class="mnav-item active" id="mnav-all" onclick="switchTab('all',null,'mnav-all')">
+      <span class="icon">🗂️</span><span>전체</span>
+    </button>
+    <button class="mnav-item" id="mnav-tech" onclick="switchTab('tech',null,'mnav-tech')">
+      <span class="icon">🔬</span><span>기술</span>
+    </button>
+    <button class="mnav-item" id="mnav-biz" onclick="switchTab('biz',null,'mnav-biz')">
+      <span class="icon">💼</span><span>비즈니스</span>
+    </button>
+    <button class="mnav-item" id="mnav-policy" onclick="switchTab('policy',null,'mnav-policy')">
+      <span class="icon">⚖️</span><span>정책</span>
+    </button>
+    <button class="mnav-item" id="mnav-youtube" onclick="switchTab('youtube',null,'mnav-youtube')">
+      <span class="icon">📺</span><span>유튜브</span>
+    </button>
+    <button class="mnav-item" id="mnav-sources" onclick="switchTab('sources',null,'mnav-sources')">
+      <span class="icon">⚙️</span><span>소스</span>
+    </button>
+  </div>
+</nav>
+
 <div id="toast" class="toast"></div>
 
 <script>
@@ -243,30 +366,70 @@ const GITHUB_USER = 'ezer-corp';
 const GITHUB_REPO = 'AI-News_Dashboard.io';
 const SOURCES_FILE = 'sources.json';
 
-// ── 자주 쓰는 AI 언론사 프리셋 ─────────────────────────────
 const PRESETS = [
-  { name:'TechCrunch AI', url:'https://techcrunch.com/category/artificial-intelligence/', cat:'tech' },
-  { name:'MIT Tech Review', url:'https://www.technologyreview.com/topic/artificial-intelligence/', cat:'tech' },
-  { name:'VentureBeat AI', url:'https://venturebeat.com/category/ai/', cat:'biz' },
-  { name:'The Verge AI', url:'https://www.theverge.com/ai-artificial-intelligence', cat:'tech' },
-  { name:'Wired AI', url:'https://www.wired.com/tag/artificial-intelligence/', cat:'tech' },
-  { name:'AI News Korea', url:'https://www.aitimes.com/', cat:'tech' },
-  { name:'뉴스1 AI', url:'https://www.news1.kr/it-science/', cat:'biz' },
-  { name:'ZDNet Korea', url:'https://zdnet.co.kr/news/?lstcode=0041', cat:'tech' },
+  {name:'TechCrunch AI', url:'https://techcrunch.com/category/artificial-intelligence/', cat:'tech'},
+  {name:'MIT Tech Review', url:'https://www.technologyreview.com/topic/artificial-intelligence/', cat:'tech'},
+  {name:'VentureBeat AI', url:'https://venturebeat.com/category/ai/', cat:'biz'},
+  {name:'The Verge AI', url:'https://www.theverge.com/ai-artificial-intelligence', cat:'tech'},
+  {name:'Wired AI', url:'https://www.wired.com/tag/artificial-intelligence/', cat:'tech'},
+  {name:'AI타임스', url:'https://www.aitimes.com/', cat:'tech'},
+  {name:'뉴스1 AI', url:'https://www.news1.kr/it-science/', cat:'biz'},
+  {name:'ZDNet Korea', url:'https://zdnet.co.kr/news/?lstcode=0041', cat:'tech'},
 ];
 
-// ── 전역 상태 ──────────────────────────────────────────────
-let sources = [];
-let dirty = false;
-let sourcesFileSHA = '';
+let sources = [], dirty = false, sourcesFileSHA = '';
+let chartInstance = null;
 
-// ── 탭 전환 ──────────────────────────────────────────────
-function switchTab(id, el) {
+// ── 다크/라이트 모드 ───────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  const next = isDark ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('ai_dash_theme', next);
+  document.getElementById('theme-btn').textContent = next === 'dark' ? '🌙' : '☀️';
+  // 차트 색상 업데이트
+  if (chartInstance) {
+    const gridColor = next === 'dark' ? '#30363d' : '#d0d7de';
+    const tickColor = next === 'dark' ? '#8b949e' : '#656d76';
+    const barColor = next === 'dark' ? '#58a6ff' : '#0969da';
+    chartInstance.data.datasets[0].backgroundColor = barColor + 'b3';
+    chartInstance.data.datasets[0].borderColor = barColor;
+    chartInstance.options.scales.x.grid.color = gridColor;
+    chartInstance.options.scales.x.ticks.color = tickColor;
+    chartInstance.options.scales.y.ticks.color = next === 'dark' ? '#e6edf3' : '#1f2328';
+    chartInstance.update();
+  }
+}
+(function initTheme() {
+  const saved = localStorage.getItem('ai_dash_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('theme-btn');
+    if (btn) btn.textContent = saved === 'dark' ? '🌙' : '☀️';
+  });
+})();
+
+// ── 탭 전환 ───────────────────────────────────────────────
+// el: 데스크탑 탭 엘리먼트 (모바일일 땐 null), mnavId: 모바일 네비 id
+function switchTab(id, el, mnavId) {
+  // 데스크탑 탭 active
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  else {
+    const match = document.querySelector(`.tab[onclick*="'${id}'"]`);
+    if (match) match.classList.add('active');
+  }
+  // 모바일 네비 active
+  document.querySelectorAll('.mnav-item').forEach(b => b.classList.remove('active'));
+  const mnavTarget = mnavId ? document.getElementById(mnavId) : document.getElementById('mnav-' + id);
+  if (mnavTarget) mnavTarget.classList.add('active');
+  // 패널 전환
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
   document.getElementById('tab-' + id).classList.add('active');
   if (id === 'sources') initSourcesTab();
+  // 모바일: 스크롤 상단으로
+  if (window.innerWidth <= 640) window.scrollTo({top:0, behavior:'smooth'});
 }
 
 // ── 토큰 관리 ─────────────────────────────────────────────
@@ -287,14 +450,11 @@ function clearToken() {
 function updateTokenStatus() {
   const el = document.getElementById('token-status');
   if (!el) return;
-  if (getToken()) {
-    el.textContent = '설정됨'; el.className = 'token-status set';
-  } else {
-    el.textContent = '미설정'; el.className = 'token-status unset';
-  }
+  if (getToken()) { el.textContent = '설정됨'; el.className = 'token-status set'; }
+  else { el.textContent = '미설정'; el.className = 'token-status unset'; }
 }
 
-// ── 소스 관리 탭 초기화 ───────────────────────────────────
+// ── 소스 탭 초기화 ─────────────────────────────────────────
 async function initSourcesTab() {
   updateTokenStatus();
   renderPresets();
@@ -305,15 +465,14 @@ async function loadSourcesFromGitHub() {
   try {
     const res = await fetch(
       `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${SOURCES_FILE}`,
-      { headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json' } }
+      { headers: {'Authorization':`token ${getToken()}`,'Accept':'application/vnd.github.v3+json'} }
     );
     if (!res.ok) throw new Error('fetch failed');
     const data = await res.json();
     sourcesFileSHA = data.sha;
-    const decoded = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
+    const decoded = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g,'')))));
     sources = decoded.sources || [];
   } catch(e) {
-    // 토큰 없어도 public repo는 읽기 가능 (raw)
     try {
       const r = await fetch(`https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${SOURCES_FILE}?t=${Date.now()}`);
       const decoded = await r.json();
@@ -327,21 +486,21 @@ async function loadSourcesFromGitHub() {
 
 // ── 소스 렌더 ─────────────────────────────────────────────
 function catBadge(cat) {
-  const map = { tech:['rgba(88,166,255,0.15)','#58a6ff','🔬'], biz:['rgba(63,185,80,0.15)','#3fb950','💼'], policy:['rgba(210,153,34,0.15)','#d29922','⚖️'] };
-  const [bg, color, icon] = map[cat] || map.tech;
+  const map = {tech:['rgba(88,166,255,.15)','var(--accent)','🔬'],biz:['rgba(63,185,80,.15)','var(--green)','💼'],policy:['rgba(210,153,34,.15)','var(--yellow)','⚖️']};
+  const [bg,color,icon] = map[cat]||map.tech;
   return `<span class="source-cat" style="background:${bg};color:${color}">${icon} ${cat}</span>`;
 }
 
 function renderSourceList() {
   const el = document.getElementById('source-list');
   document.getElementById('src-count').textContent = `(${sources.length}개)`;
-  if (!sources.length) { el.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:12px">소스가 없습니다.</div>'; return; }
-  el.innerHTML = sources.map((s, i) => `
+  if (!sources.length) { el.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:10px">소스가 없습니다.</div>'; return; }
+  el.innerHTML = sources.map((s,i) => `
     <div class="source-item">
-      <button class="source-toggle ${s.enabled ? 'on' : ''}" onclick="toggleSource(${i})" title="${s.enabled ? '비활성화' : '활성화'}"></button>
+      <button class="source-toggle ${s.enabled?'on':''}" onclick="toggleSource(${i})" title="${s.enabled?'비활성화':'활성화'}"></button>
       <div class="source-info">
         <div class="source-name">${s.name}</div>
-        <div class="source-url"><a href="${s.url}" target="_blank" style="color:var(--text2);text-decoration:none;">${s.url}</a></div>
+        <div class="source-url"><a href="${s.url}" target="_blank" style="color:var(--text2);text-decoration:none">${s.url}</a></div>
       </div>
       ${catBadge(s.category)}
       ${s.required ? '<span class="required-badge" title="필수 소스">🔒</span>' : `<button class="btn-del" onclick="deleteSource(${i})" title="삭제">✕</button>`}
@@ -349,43 +508,34 @@ function renderSourceList() {
 }
 
 function toggleSource(i) {
-  if (sources[i].required) { toast('🔒 필수 소스는 비활성화할 수 없습니다.', 'error'); return; }
+  if (sources[i].required) { toast('🔒 필수 소스는 비활성화할 수 없습니다.','error'); return; }
   sources[i].enabled = !sources[i].enabled;
-  renderSourceList();
-  markDirty();
+  renderSourceList(); markDirty();
 }
-
 function deleteSource(i) {
-  if (sources[i].required) { toast('🔒 필수 소스는 삭제할 수 없습니다.', 'error'); return; }
+  if (sources[i].required) { toast('🔒 필수 소스는 삭제할 수 없습니다.','error'); return; }
   if (!confirm(`"${sources[i].name}"을(를) 삭제할까요?`)) return;
-  sources.splice(i, 1);
-  renderSourceList();
-  markDirty();
+  sources.splice(i,1); renderSourceList(); markDirty();
 }
-
 function addSource() {
   const name = document.getElementById('new-name').value.trim();
   const url  = document.getElementById('new-url').value.trim();
   const cat  = document.getElementById('new-cat').value;
-  if (!name) { toast('이름을 입력하세요.', 'error'); return; }
-  if (!url || !url.startsWith('http')) { toast('올바른 URL을 입력하세요.', 'error'); return; }
-  if (sources.find(s => s.url === url)) { toast('이미 추가된 URL입니다.', 'error'); return; }
-  sources.push({ name, url, category: cat, enabled: true, required: false });
-  document.getElementById('new-name').value = '';
-  document.getElementById('new-url').value = '';
-  renderSourceList();
-  markDirty();
-  toast(`✅ "${name}" 소스가 추가됐습니다.`, 'success');
+  if (!name) { toast('이름을 입력하세요.','error'); return; }
+  if (!url||!url.startsWith('http')) { toast('올바른 URL을 입력하세요.','error'); return; }
+  if (sources.find(s=>s.url===url)) { toast('이미 추가된 URL입니다.','error'); return; }
+  sources.push({name,url,category:cat,enabled:true,required:false});
+  document.getElementById('new-name').value='';
+  document.getElementById('new-url').value='';
+  renderSourceList(); markDirty();
+  toast(`✅ "${name}" 추가됐습니다.`,'success');
 }
-
 function addPreset(p) {
-  if (sources.find(s => s.url === p.url)) { toast('이미 추가된 소스입니다.', 'error'); return; }
-  sources.push({ name: p.name, url: p.url, category: p.cat, enabled: true, required: false });
-  renderSourceList();
-  markDirty();
-  toast(`✅ "${p.name}" 추가됐습니다.`, 'success');
+  if (sources.find(s=>s.url===p.url)) { toast('이미 추가된 소스입니다.','error'); return; }
+  sources.push({name:p.name,url:p.url,category:p.cat,enabled:true,required:false});
+  renderSourceList(); markDirty();
+  toast(`✅ "${p.name}" 추가됐습니다.`,'success');
 }
-
 function renderPresets() {
   document.getElementById('presets').innerHTML = PRESETS.map(p =>
     `<button class="btn" style="background:var(--surface2);color:var(--text);font-size:11px;padding:5px 10px" onclick='addPreset(${JSON.stringify(p)})'>${p.name}</button>`
@@ -395,68 +545,50 @@ function renderPresets() {
 // ── GitHub 저장 ───────────────────────────────────────────
 async function saveSourcesToGitHub() {
   const token = getToken();
-  if (!token) { toast('🔑 먼저 GitHub 토큰을 설정하세요.', 'error'); return; }
-
-  // SHA가 없거나 불확실하면 저장 전 항상 최신 SHA 조회
+  if (!token) { toast('🔑 먼저 GitHub 토큰을 설정하세요.','error'); return; }
   try {
     const r = await fetch(
       `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${SOURCES_FILE}`,
-      { headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } }
+      {headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github.v3+json'}}
     );
-    if (r.ok) {
-      const d = await r.json();
-      sourcesFileSHA = d.sha;
-    }
-  } catch(e) { /* 신규 파일이면 SHA 없어도 됨 */ }
-
-  const content = JSON.stringify({ sources }, null, 2);
+    if (r.ok) { const d = await r.json(); sourcesFileSHA = d.sha; }
+  } catch(e) {}
+  const content = JSON.stringify({sources},null,2);
   const encoded = btoa(unescape(encodeURIComponent(content)));
-  const body = {
-    message: `sources: 수집 소스 업데이트 (${new Date().toLocaleDateString('ko-KR')})`,
-    content: encoded,
-    branch: 'main'
-  };
+  const body = {message:`sources: 수집 소스 업데이트 (${new Date().toLocaleDateString('ko-KR')})`,content:encoded,branch:'main'};
   if (sourcesFileSHA) body.sha = sourcesFileSHA;
-
   try {
     const res = await fetch(
       `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${SOURCES_FILE}`,
-      { method: 'PUT', headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+      {method:'PUT',headers:{'Authorization':`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify(body)}
     );
-    if (!res.ok) { const e = await res.json(); throw new Error(e.message); }
+    if (!res.ok) { const e=await res.json(); throw new Error(e.message); }
     const data = await res.json();
     sourcesFileSHA = data.content.sha;
-    dirty = false;
-    hideSaveBar();
-    toast('✅ GitHub에 저장됐습니다! 다음 오전 6시 실행 시 반영됩니다.', 'success');
-  } catch(e) {
-    toast('❌ 저장 실패: ' + e.message, 'error');
-  }
+    dirty = false; hideSaveBar();
+    toast('✅ GitHub에 저장됐습니다! 다음 오전 6시 실행 시 반영됩니다.','success');
+  } catch(e) { toast('❌ 저장 실패: '+e.message,'error'); }
 }
 
-function markDirty() { dirty = true; document.getElementById('save-bar').classList.remove('hidden'); }
+function markDirty() { dirty=true; document.getElementById('save-bar').classList.remove('hidden'); }
 function hideSaveBar() { document.getElementById('save-bar').classList.add('hidden'); }
 
 // ── 토스트 ────────────────────────────────────────────────
-function toast(msg, type='') {
+function toast(msg,type='') {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = `toast show ${type}`;
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 3500);
+  el.textContent = msg; el.className=`toast show ${type}`;
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),3500);
 }
 
 // ── 뉴스 렌더 ─────────────────────────────────────────────
 async function loadData() {
-  try {
-    const res = await fetch('data.json?t=' + Date.now());
-    return await res.json();
-  } catch(e) { return null; }
+  try { const r=await fetch('data.json?t='+Date.now()); return await r.json(); }
+  catch(e){ return null; }
 }
 
 function badge(cat) {
-  const map = { tech:'badge-tech', biz:'badge-biz', policy:'badge-policy', youtube:'badge-youtube' };
-  const label = { tech:'기술 트렌드', biz:'비즈니스', policy:'정책·규제', youtube:'YouTube' };
+  const map={tech:'badge-tech',biz:'badge-biz',policy:'badge-policy',youtube:'badge-youtube'};
+  const label={tech:'기술 트렌드',biz:'비즈니스',policy:'정책·규제',youtube:'YouTube'};
   return `<span class="category-badge ${map[cat]||'badge-tech'}">${label[cat]||cat}</span>`;
 }
 
@@ -467,7 +599,7 @@ function renderCard(item) {
     <p>${item.summary}</p>
     <div class="card-footer">
       <span class="source">📰 ${item.source||''}</span>
-      ${item.url ? `<a class="read-more" href="${item.url}" target="_blank">원문 보기 →</a>` : ''}
+      ${item.url?`<a class="read-more" href="${item.url}" target="_blank">원문 보기 →</a>`:''}
     </div>
   </div>`;
 }
@@ -479,37 +611,41 @@ function renderYtCard(item) {
       <h4>${item.title}</h4>
       <p>${item.summary}</p>
       <div class="yt-meta">📺 NTD Korea &nbsp;|&nbsp; ${item.date||''}
-        ${item.url ? `&nbsp;|&nbsp; <a class="read-more" href="${item.url}" target="_blank">영상 보기 →</a>` : ''}
+        ${item.url?`&nbsp;|&nbsp; <a class="read-more" href="${item.url}" target="_blank">영상 보기 →</a>`:''}
       </div>
     </div>
   </div>`;
 }
 
 function renderChart(keywords) {
-  if (!keywords || !keywords.length) return;
+  if (!keywords||!keywords.length) return;
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  const gridColor = isDark?'#30363d':'#d0d7de';
+  const tickColor = isDark?'#8b949e':'#656d76';
+  const barColor  = isDark?'#58a6ff':'#0969da';
   const ctx = document.getElementById('keyword-chart').getContext('2d');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: keywords.map(k => k.word),
-      datasets: [{ data: keywords.map(k => k.count), backgroundColor: 'rgba(88,166,255,0.7)', borderColor: 'rgba(88,166,255,1)', borderWidth: 1, borderRadius: 4 }]
+  if (chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:keywords.map(k=>k.word),
+      datasets:[{data:keywords.map(k=>k.count),backgroundColor:barColor+'b3',borderColor:barColor,borderWidth:1,borderRadius:4}]
     },
-    options: {
-      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
-        y: { grid: { display: false }, ticks: { color: '#e6edf3', font: { size: 12 } } }
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:gridColor},ticks:{color:tickColor}},
+        y:{grid:{display:false},ticks:{color:isDark?'#e6edf3':'#1f2328',font:{size:12}}}
       }
     }
   });
 }
 
 function renderStats(data) {
-  const news = data.news || [];
-  const byC = {};
-  news.forEach(n => { byC[n.category] = (byC[n.category]||0) + 1; });
-  document.getElementById('stat-cards').innerHTML = `
+  const news=data.news||[]; const byC={};
+  news.forEach(n=>{byC[n.category]=(byC[n.category]||0)+1;});
+  document.getElementById('stat-cards').innerHTML=`
     <div class="stat-card"><div class="label">총 뉴스</div><div class="value" style="color:var(--accent)">${news.length}</div><div class="sub">오늘 수집</div></div>
     <div class="stat-card"><div class="label">기술 트렌드</div><div class="value" style="color:var(--accent)">${byC.tech||0}</div><div class="sub">기사</div></div>
     <div class="stat-card"><div class="label">비즈니스</div><div class="value" style="color:var(--green)">${byC.biz||0}</div><div class="sub">기사</div></div>
@@ -520,24 +656,32 @@ function renderStats(data) {
 async function render() {
   const data = await loadData();
   if (!data) {
-    ['all','tech','biz','policy'].forEach(t => {
-      const el = document.getElementById('news-' + t);
-      if (el) el.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>매일 오전 6시에 자동 업데이트됩니다.</p></div>';
+    ['all','tech','biz','policy'].forEach(t=>{
+      const el=document.getElementById('news-'+t);
+      if(el) el.innerHTML='<div class="empty-state"><div class="icon">⏳</div><p>매일 오전 6시에 자동 업데이트됩니다.</p></div>';
     });
-    document.getElementById('last-updated').textContent = '업데이트 대기 중';
+    document.getElementById('last-updated').textContent='업데이트 대기 중';
     return;
   }
-  document.getElementById('last-updated').textContent = '마지막 업데이트: ' + (data.updated_at||'');
+  document.getElementById('last-updated').textContent='마지막 업데이트: '+(data.updated_at||'');
   renderStats(data);
   renderChart(data.keywords||[]);
-  const news = data.news || [];
-  document.getElementById('news-all').innerHTML = news.map(renderCard).join('') || '<div class="empty-state"><div class="icon">📭</div><p>뉴스가 없습니다.</p></div>';
-  ['tech','biz','policy'].forEach(cat => {
-    const f = news.filter(n => n.category === cat);
-    document.getElementById('news-' + cat).innerHTML = f.map(renderCard).join('') || '<div class="empty-state"><div class="icon">📭</div><p>해당 카테고리 뉴스가 없습니다.</p></div>';
+  const news=data.news||[];
+  document.getElementById('news-all').innerHTML=news.map(renderCard).join('')||'<div class="empty-state"><div class="icon">📭</div><p>뉴스가 없습니다.</p></div>';
+  ['tech','biz','policy'].forEach(cat=>{
+    const f=news.filter(n=>n.category===cat);
+    document.getElementById('news-'+cat).innerHTML=f.map(renderCard).join('')||'<div class="empty-state"><div class="icon">📭</div><p>해당 카테고리 뉴스가 없습니다.</p></div>';
   });
-  document.getElementById('news-youtube').innerHTML = (data.youtube||[]).map(renderYtCard).join('') || '<div class="empty-state"><div class="icon">📺</div><p>최근 유튜브 영상이 없습니다.</p></div>';
+  document.getElementById('news-youtube').innerHTML=(data.youtube||[]).map(renderYtCard).join('')||'<div class="empty-state"><div class="icon">📺</div><p>최근 유튜브 영상이 없습니다.</p></div>';
 }
+
+// 저장된 테마 즉시 적용
+(()=>{
+  const t=localStorage.getItem('ai_dash_theme')||'dark';
+  document.documentElement.setAttribute('data-theme',t);
+  const btn=document.getElementById('theme-btn');
+  if(btn) btn.textContent=t==='dark'?'🌙':'☀️';
+})();
 
 render();
 </script>
